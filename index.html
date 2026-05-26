@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>Field App Tips</title>
+
+  <!-- Wistia player — loads async, won't block render -->
+  <script src="https://fast.wistia.com/assets/external/E-v1.js" async></script>
+
+  <style>
+    /* ─────────────────────────────────────────────
+       BASE RESET
+    ───────────────────────────────────────────── */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      background: #000;
+      overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ─────────────────────────────────────────────
+       FEED WRAPPER — fills the iframe / viewport
+    ───────────────────────────────────────────── */
+    #feed {
+      width: 100%;
+      height: 100%;
+      overflow-y: scroll;
+      scroll-snap-type: y mandatory;
+      -webkit-overflow-scrolling: touch;  /* smooth on iOS */
+      scrollbar-width: none;              /* Firefox */
+    }
+    #feed::-webkit-scrollbar { display: none; } /* Chrome/Safari */
+
+    /* ─────────────────────────────────────────────
+       SLIDE — one per video, full viewport height
+    ───────────────────────────────────────────── */
+    .slide {
+      position: relative;
+      width: 100%;
+      height: 100vh;        /* fallback */
+      height: 100dvh;       /* dynamic viewport — handles mobile chrome bar */
+      scroll-snap-align: start;
+      scroll-snap-stop: always;
+      background: #080810;
+      overflow: hidden;
+    }
+
+    /* ─────────────────────────────────────────────
+       WISTIA EMBED — fills the slide completely
+    ───────────────────────────────────────────── */
+    .wistia-wrap {
+      position: absolute;
+      inset: 0;
+      /* videoFoam makes Wistia fill the container */
+    }
+
+    .wistia_embed {
+      width: 100% !important;
+      height: 100% !important;
+    }
+
+    /* ─────────────────────────────────────────────
+       BOTTOM GRADIENT OVERLAY — text readability
+    ───────────────────────────────────────────── */
+    .overlay {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 68px;     /* leave room for side buttons */
+      padding: 80px 18px 28px;
+      background: linear-gradient(
+        to bottom,
+        transparent 0%,
+        rgba(0,0,0,0.05) 30%,
+        rgba(0,0,0,0.75) 70%,
+        rgba(0,0,0,0.92) 100%
+      );
+      pointer-events: none;
+    }
+
+    .tip-num {
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--accent, #5b5bd6);
+      margin-bottom: 6px;
+    }
+
+    .tip-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #fff;
+      line-height: 1.3;
+      margin-bottom: 8px;
+    }
+
+    .tip-caption {
+      font-size: 13px;
+      color: rgba(255,255,255,0.82);
+      line-height: 1.55;
+      margin-bottom: 10px;
+    }
+
+    .tip-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .tip-tag {
+      font-size: 11px;
+      color: var(--accent, #5b5bd6);
+      font-weight: 600;
+    }
+    .tip-tag::before { content: '#'; }
+
+    /* ─────────────────────────────────────────────
+       SIDE ACTION BUTTONS
+    ───────────────────────────────────────────── */
+    .actions {
+      position: absolute;
+      right: 12px;
+      bottom: 80px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .action-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+      background: none;
+      border: none;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .action-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.14);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 19px;
+      transition: background 0.15s, transform 0.12s;
+    }
+
+    .action-btn:hover .action-icon,
+    .action-btn:focus .action-icon {
+      background: rgba(255,255,255,0.26);
+      transform: scale(1.1);
+    }
+
+    .action-btn.saved .action-icon {
+      background: rgba(91, 91, 214, 0.55);
+    }
+
+    .action-label {
+      font-size: 10px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.7);
+    }
+
+    /* ─────────────────────────────────────────────
+       FIXED HEADER (channel name + counter)
+    ───────────────────────────────────────────── */
+    #header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      padding: 16px 18px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: linear-gradient(rgba(0,0,0,0.6) 0%, transparent 100%);
+      pointer-events: none;
+    }
+
+    #channel-name {
+      font-size: 14px;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: 0.02em;
+    }
+
+    #counter {
+      font-size: 12px;
+      color: rgba(255,255,255,0.5);
+      font-weight: 600;
+    }
+
+    /* ─────────────────────────────────────────────
+       PROGRESS DOTS (right edge, vertically centred)
+    ───────────────────────────────────────────── */
+    #dots {
+      position: fixed;
+      right: 6px;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+      pointer-events: none;
+    }
+
+    .dot {
+      width: 3px;
+      height: 14px;
+      border-radius: 2px;
+      background: rgba(255,255,255,0.2);
+      transition: height 0.2s ease, background 0.2s ease;
+    }
+
+    .dot.active {
+      height: 24px;
+      background: #fff;
+    }
+
+    /* ─────────────────────────────────────────────
+       SCROLL HINT (fades out after 3 seconds)
+    ───────────────────────────────────────────── */
+    #scroll-hint {
+      position: fixed;
+      bottom: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 100;
+      font-size: 11px;
+      color: rgba(255,255,255,0.35);
+      pointer-events: none;
+      animation: fadeHint 1s ease 3s forwards;
+      white-space: nowrap;
+    }
+    @keyframes fadeHint {
+      to { opacity: 0; }
+    }
+
+    /* ─────────────────────────────────────────────
+       LOADING STATE
+    ───────────────────────────────────────────── */
+    #loading {
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      background: #080810;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+    }
+
+    .spinner {
+      width: 32px;
+      height: 32px;
+      border: 3px solid rgba(255,255,255,0.1);
+      border-top-color: var(--accent, #5b5bd6);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    #loading p {
+      font-size: 13px;
+      color: rgba(255,255,255,0.4);
+    }
+
+    /* ─────────────────────────────────────────────
+       ERROR STATE
+    ───────────────────────────────────────────── */
+    #error {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      background: #080810;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 40px;
+      text-align: center;
+    }
+    #error p { font-size: 13px; color: rgba(255,255,255,0.5); line-height: 1.6; }
+    #error strong { color: #f87171; }
+  </style>
+</head>
+<body>
+
+  <!-- Fixed chrome (always visible) -->
+  <div id="header">
+    <div id="channel-name">⚡ Field App Tips</div>
+    <div id="counter"></div>
+  </div>
+  <div id="dots"></div>
+  <div id="scroll-hint">↕ &nbsp;swipe for next tip</div>
+
+  <!-- Loading screen -->
+  <div id="loading">
+    <div class="spinner"></div>
+    <p>Loading tips…</p>
+  </div>
+
+  <!-- Error screen -->
+  <div id="error">
+    <p><strong>Couldn't load videos.</strong><br>
+    Make sure <code>videos.json</code> is in the same folder as this file and your Wistia IDs are correct.</p>
+  </div>
+
+  <!-- Slides are injected here -->
+  <div id="feed"></div>
+
+<script>
+// ─────────────────────────────────────────────────────────────
+//  FIELD APP TIPS — TikTok-style feed
+//  Reads from videos.json in the same directory.
+//  Built for Docebo iframe embed + Wistia video hosting.
+// ─────────────────────────────────────────────────────────────
+
+// ── State ────────────────────────────────────────────────────
+let currentIndex  = 0;
+let totalSlides   = 0;
+let wistiaHandles = {};   // wistiaId → Wistia video object
+let saved         = [];
+
+// Restore saved from localStorage (best-effort)
+try { saved = JSON.parse(localStorage.getItem('fat-saved') || '[]'); } catch (_) {}
+
+// ── Fetch config & boot ──────────────────────────────────────
+fetch('./videos.json')
+  .then(r => { if (!r.ok) throw new Error(r.statusText); return r.json(); })
+  .then(config => init(config))
+  .catch(err => {
+    console.error('Feed error:', err);
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('error').style.display   = 'flex';
+  });
+
+// ── Init: render slides & wire up observers ──────────────────
+function init(config) {
+  const feed = document.getElementById('feed');
+
+  // Apply accent colour from config
+  document.documentElement.style.setProperty('--accent', config.accentColor || '#5b5bd6');
+
+  // Update channel name in header
+  document.getElementById('channel-name').textContent = '⚡ ' + config.channelName;
+
+  totalSlides = config.videos.length;
+
+  // Build progress dots
+  const dotsEl = document.getElementById('dots');
+  config.videos.forEach((_, i) => {
+    const dot = document.createElement('div');
+    dot.className = 'dot' + (i === 0 ? ' active' : '');
+    dot.id = 'dot-' + i;
+    dotsEl.appendChild(dot);
+  });
+
+  // Render slides
+  config.videos.forEach((v, i) => {
+    feed.appendChild(makeSlide(v, i));
+  });
+
+  // Update counter
+  updateCounter(0);
+
+  // Set up Intersection Observer for play/pause
+  setupObserver();
+
+  // Remove loading screen
+  document.getElementById('loading').style.display = 'none';
+
+  // Restore saved button states
+  saved.forEach(idx => {
+    const btn = document.querySelector(`[data-save="${idx}"]`);
+    if (btn) btn.classList.add('saved');
+  });
+}
+
+// ── Build a single slide element ─────────────────────────────
+function makeSlide(video, index) {
+  const slide = document.createElement('div');
+  slide.className = 'slide';
+  slide.dataset.index    = index;
+  slide.dataset.wistiaId = video.wistiaId;
+
+  const tagsHtml = (video.tags || [])
+    .map(t => `<span class="tip-tag">${t}</span>`)
+    .join('');
+
+  // NOTE: Wistia picks up any div with class "wistia_embed wistia_async_HASH"
+  // and replaces it with the video player automatically.
+  slide.innerHTML = `
+    <div class="wistia-wrap">
+      <div class="wistia_embed wistia_async_${video.wistiaId} videoFoam=true"
+           style="height:100%;width:100%">&nbsp;</div>
+    </div>
+    <div class="overlay">
+      <div class="tip-num">Tip #${video.tipNumber}</div>
+      <div class="tip-title">${video.title}</div>
+      <div class="tip-caption">${video.caption}</div>
+      <div class="tip-tags">${tagsHtml}</div>
+    </div>
+    <div class="actions">
+      <button class="action-btn" data-save="${index}" onclick="toggleSave(${index})"
+              aria-label="Save this tip">
+        <div class="action-icon">🔖</div>
+        <div class="action-label">Save</div>
+      </button>
+    </div>
+  `;
+
+  // Register with Wistia API once the player is ready
+  // _wq is Wistia's async queue — safe to push before E-v1.js loads
+  window._wq = window._wq || [];
+  window._wq.push({
+    id: video.wistiaId,
+    onReady: function(wVideo) {
+      wistiaHandles[video.wistiaId] = wVideo;
+
+      // ── Optional: postMessage to Docebo parent on video end ──
+      // Uncomment this block when you're ready to wire up completion tracking.
+      //
+      // wVideo.bind('end', function() {
+      //   window.parent.postMessage({
+      //     type:    'fat-clip-complete',
+      //     wistiaId: video.wistiaId,
+      //     tipNum:   video.tipNumber,
+      //     title:    video.title,
+      //   }, '*');
+      // });
+    }
+  });
+
+  return slide;
+}
+
+// ── Intersection Observer: play visible slide, pause others ──
+function setupObserver() {
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      const wId    = entry.target.dataset.wistiaId;
+      const handle = wistiaHandles[wId];
+      const index  = parseInt(entry.target.dataset.index, 10);
+
+      if (entry.isIntersecting) {
+        handle && handle.play();
+        updateUI(index);
+      } else {
+        handle && handle.pause();
+      }
+    });
+  }, {
+    threshold: 0.65   // slide must be 65% visible before it plays
+  });
+
+  document.querySelectorAll('.slide').forEach(s => observer.observe(s));
+}
+
+// ── Update dots + counter when active slide changes ──────────
+function updateUI(newIndex) {
+  if (newIndex === currentIndex) return;
+
+  // Dots
+  const prevDot = document.getElementById('dot-' + currentIndex);
+  const newDot  = document.getElementById('dot-' + newIndex);
+  if (prevDot) prevDot.classList.remove('active');
+  if (newDot)  newDot.classList.add('active');
+
+  currentIndex = newIndex;
+  updateCounter(newIndex);
+}
+
+function updateCounter(index) {
+  document.getElementById('counter').textContent =
+    (index + 1) + ' / ' + totalSlides;
+}
+
+// ── Save toggle ───────────────────────────────────────────────
+function toggleSave(index) {
+  const btn = document.querySelector(`[data-save="${index}"]`);
+  const pos = saved.indexOf(index);
+
+  if (pos === -1) {
+    saved.push(index);
+    btn && btn.classList.add('saved');
+  } else {
+    saved.splice(pos, 1);
+    btn && btn.classList.remove('saved');
+  }
+
+  try { localStorage.setItem('fat-saved', JSON.stringify(saved)); } catch (_) {}
+}
+</script>
+</body>
+</html>
