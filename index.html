@@ -4,50 +4,40 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
   <title>Field App Tips</title>
- 
-  <!-- Wistia player — loads async, won't block render -->
   <script src="https://fast.wistia.com/assets/external/E-v1.js" async></script>
  
   <style>
     /* ─────────────────────────────────────────────
        BASE RESET
     ───────────────────────────────────────────── */
-    *, *::before, *::after {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
  
     html, body {
-      width: 100%;
-      height: 100%;
-      background: #000;
-      overflow: hidden;
+      width: 100%; height: 100%;
+      background: #000; overflow: hidden;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
       -webkit-font-smoothing: antialiased;
     }
  
     /* ─────────────────────────────────────────────
-       FEED WRAPPER — fills the iframe / viewport
+       FEED WRAPPER
     ───────────────────────────────────────────── */
     #feed {
-      width: 100%;
-      height: 100%;
+      width: 100%; height: 100%;
       overflow-y: scroll;
       scroll-snap-type: y mandatory;
-      -webkit-overflow-scrolling: touch;  /* smooth on iOS */
-      scrollbar-width: none;              /* Firefox */
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
     }
-    #feed::-webkit-scrollbar { display: none; } /* Chrome/Safari */
+    #feed::-webkit-scrollbar { display: none; }
  
     /* ─────────────────────────────────────────────
-       SLIDE — one per video, full viewport height
+       SLIDE
     ───────────────────────────────────────────── */
     .slide {
       position: relative;
       width: 100%;
-      height: 100vh;        /* fallback */
-      height: 100dvh;       /* dynamic viewport — handles mobile chrome bar */
+      height: 100vh; height: 100dvh;
       scroll-snap-align: start;
       scroll-snap-stop: always;
       background: #080810;
@@ -55,28 +45,23 @@
     }
  
     /* ─────────────────────────────────────────────
-       WISTIA EMBED — fills the slide completely
+       WISTIA VIDEO — fills the slide
     ───────────────────────────────────────────── */
     .wistia-wrap {
       position: absolute;
       inset: 0;
-      /* videoFoam makes Wistia fill the container */
     }
- 
-    .wistia_embed {
-      width: 100% !important;
-      height: 100% !important;
-    }
+    .wistia_embed { width: 100% !important; height: 100% !important; }
  
     /* ─────────────────────────────────────────────
-       BOTTOM GRADIENT OVERLAY — text readability
+       BOTTOM TEXT OVERLAY
+       Extra bottom padding leaves room for timeline
     ───────────────────────────────────────────── */
     .overlay {
       position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 68px;     /* leave room for side buttons */
-      padding: 80px 18px 28px;
+      bottom: 0; left: 0;
+      right: 68px;
+      padding: 80px 18px 72px; /* 72px bottom = timeline height */
       background: linear-gradient(
         to bottom,
         transparent 0%,
@@ -87,221 +72,281 @@
       pointer-events: none;
     }
  
-    .tip-num {
-      font-size: 10px;
-      font-weight: 800;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      color: var(--accent, #5b5bd6);
+    .tip-title   { font-size: 16px; font-weight: 700; color: #fff; line-height: 1.3; margin-bottom: 8px; }
+    .tip-caption { font-size: 13px; color: rgba(255,255,255,0.82); line-height: 1.55; margin-bottom: 10px; }
+    .tip-tags    { display: flex; flex-wrap: wrap; gap: 6px; }
+    .tip-tag     { font-size: 11px; color: var(--accent, #5b5bd6); font-weight: 600; }
+    .tip-tag::before { content: '#'; }
+ 
+    /* ─────────────────────────────────────────────
+       TIMELINE BAR — sits at the very bottom
+    ───────────────────────────────────────────── */
+    .timeline {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      z-index: 20;
+      padding: 12px 16px 10px;
+      background: linear-gradient(transparent, rgba(0,0,0,0.7));
+    }
+ 
+    /* Time labels */
+    .tl-times {
+      display: flex;
+      justify-content: space-between;
       margin-bottom: 6px;
     }
- 
-    .tip-title {
-      font-size: 16px;
-      font-weight: 700;
-      color: #fff;
-      line-height: 1.3;
-      margin-bottom: 8px;
-    }
- 
-    .tip-caption {
-      font-size: 13px;
-      color: rgba(255,255,255,0.82);
-      line-height: 1.55;
-      margin-bottom: 10px;
-    }
- 
-    .tip-tags {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-    }
- 
-    .tip-tag {
-      font-size: 11px;
-      color: var(--accent, #5b5bd6);
+    .tl-time {
+      font-size: 10px;
       font-weight: 600;
+      color: rgba(255,255,255,0.6);
+      font-variant-numeric: tabular-nums;
+      min-width: 32px;
     }
-    .tip-tag::before { content: '#'; }
+    .tl-time.right { text-align: right; }
+ 
+    /* Track (clickable/draggable bar) */
+    .tl-track {
+      position: relative;
+      width: 100%;
+      height: 20px;           /* tall touch target */
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+    }
+ 
+    /* Background rail */
+    .tl-rail {
+      position: absolute;
+      left: 0; right: 0;
+      height: 3px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+ 
+    /* Filled progress */
+    .tl-fill {
+      height: 100%;
+      width: 0%;
+      background: var(--accent, #5b5bd6);
+      border-radius: 2px;
+      transition: width 0.1s linear;
+      pointer-events: none;
+    }
+ 
+    /* Draggable thumb */
+    .tl-thumb {
+      position: absolute;
+      left: 0%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 12px; height: 12px;
+      border-radius: 50%;
+      background: #fff;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.5);
+      transition: left 0.1s linear;
+      pointer-events: none;
+    }
  
     /* ─────────────────────────────────────────────
        SIDE ACTION BUTTONS
     ───────────────────────────────────────────── */
     .actions {
       position: absolute;
-      right: 12px;
-      bottom: 80px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 20px;
+      right: 12px; bottom: 80px;
+      display: flex; flex-direction: column;
+      align-items: center; gap: 20px;
     }
  
     .action-btn {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 4px;
+      display: flex; flex-direction: column;
+      align-items: center; gap: 4px;
       cursor: pointer;
-      background: none;
-      border: none;
-      padding: 0;
+      background: none; border: none; padding: 0;
       -webkit-tap-highlight-color: transparent;
     }
  
     .action-icon {
-      width: 44px;
-      height: 44px;
+      width: 44px; height: 44px;
       border-radius: 50%;
       background: rgba(255,255,255,0.14);
       backdrop-filter: blur(8px);
       -webkit-backdrop-filter: blur(8px);
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      display: flex; align-items: center; justify-content: center;
       font-size: 19px;
       transition: background 0.15s, transform 0.12s;
     }
  
     .action-btn:hover .action-icon,
-    .action-btn:focus .action-icon {
-      background: rgba(255,255,255,0.26);
-      transform: scale(1.1);
-    }
+    .action-btn:focus .action-icon { background: rgba(255,255,255,0.26); transform: scale(1.08); }
  
-    .action-btn.saved .action-icon {
-      background: rgba(91, 91, 214, 0.55);
-    }
+    .action-btn.saved .action-icon   { background: rgba(91,91,214,0.55); }
+    .action-btn.sharing .action-icon { background: rgba(255,255,255,0.3); }
  
-    .action-label {
-      font-size: 10px;
-      font-weight: 600;
-      color: rgba(255,255,255,0.7);
-    }
+    .action-label { font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.7); }
  
     /* ─────────────────────────────────────────────
-       FIXED HEADER (channel name + counter)
+       FIXED HEADER
     ───────────────────────────────────────────── */
     #header {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      z-index: 100;
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
       padding: 16px 18px 12px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background: linear-gradient(rgba(0,0,0,0.6) 0%, transparent 100%);
+      display: flex; align-items: center; justify-content: space-between;
+      background: linear-gradient(rgba(0,0,0,0.6), transparent);
       pointer-events: none;
     }
+    #channel-name { font-size: 14px; font-weight: 800; color: #fff; }
+    #counter      { font-size: 12px; color: rgba(255,255,255,0.5); font-weight: 600; }
  
-    #channel-name {
-      font-size: 14px;
-      font-weight: 800;
+    /* Saved clips counter badge in header */
+    #saved-badge {
+      display: none;
+      pointer-events: all;
+      cursor: pointer;
+      background: var(--accent, #5b5bd6);
       color: #fff;
-      letter-spacing: 0.02em;
-    }
- 
-    #counter {
-      font-size: 12px;
-      color: rgba(255,255,255,0.5);
-      font-weight: 600;
+      font-size: 10px; font-weight: 800;
+      padding: 3px 8px; border-radius: 10px;
+      margin-left: 10px;
     }
  
     /* ─────────────────────────────────────────────
-       PROGRESS DOTS (right edge, vertically centred)
+       PROGRESS DOTS
     ───────────────────────────────────────────── */
     #dots {
-      position: fixed;
-      right: 6px;
-      top: 50%;
-      transform: translateY(-50%);
-      z-index: 100;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 5px;
+      position: fixed; right: 6px; top: 50%;
+      transform: translateY(-50%); z-index: 100;
+      display: flex; flex-direction: column;
+      align-items: center; gap: 5px;
       pointer-events: none;
     }
- 
-    .dot {
-      width: 3px;
-      height: 14px;
-      border-radius: 2px;
-      background: rgba(255,255,255,0.2);
-      transition: height 0.2s ease, background 0.2s ease;
-    }
- 
-    .dot.active {
-      height: 24px;
-      background: #fff;
-    }
+    .dot { width: 3px; height: 14px; border-radius: 2px; background: rgba(255,255,255,0.2); transition: height 0.2s, background 0.2s; }
+    .dot.active { height: 24px; background: #fff; }
  
     /* ─────────────────────────────────────────────
-       SCROLL HINT (fades out after 3 seconds)
+       SCROLL HINT
     ───────────────────────────────────────────── */
     #scroll-hint {
-      position: fixed;
-      bottom: 12px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 100;
-      font-size: 11px;
-      color: rgba(255,255,255,0.35);
+      position: fixed; bottom: 12px; left: 50%;
+      transform: translateX(-50%); z-index: 100;
+      font-size: 11px; color: rgba(255,255,255,0.35);
       pointer-events: none;
       animation: fadeHint 1s ease 3s forwards;
       white-space: nowrap;
     }
-    @keyframes fadeHint {
-      to { opacity: 0; }
+    @keyframes fadeHint { to { opacity: 0; } }
+ 
+    /* ─────────────────────────────────────────────
+       TOAST NOTIFICATION
+    ───────────────────────────────────────────── */
+    #toast {
+      position: fixed; bottom: 80px; left: 50%;
+      transform: translateX(-50%) translateY(10px);
+      z-index: 300;
+      background: rgba(30,30,40,0.95);
+      border: 1px solid rgba(255,255,255,0.12);
+      color: #fff; font-size: 12px; font-weight: 600;
+      padding: 9px 18px; border-radius: 20px;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.2s, transform 0.2s;
+      white-space: nowrap;
+      backdrop-filter: blur(10px);
+    }
+    #toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
     }
  
     /* ─────────────────────────────────────────────
-       LOADING STATE
+       SAVED CLIPS DRAWER
     ───────────────────────────────────────────── */
-    #loading {
-      position: fixed;
-      inset: 0;
-      z-index: 200;
-      background: #080810;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 14px;
+    #saved-drawer {
+      position: fixed; inset: 0; z-index: 200;
+      display: none;
+    }
+    #saved-drawer.open { display: block; }
+ 
+    #saved-backdrop {
+      position: absolute; inset: 0;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(4px);
     }
  
+    #saved-panel {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      background: #13131a;
+      border-top: 1px solid #2a2a35;
+      border-radius: 16px 16px 0 0;
+      padding: 16px 0 32px;
+      max-height: 65vh;
+      display: flex; flex-direction: column;
+    }
+ 
+    #saved-panel-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 18px 14px;
+      border-bottom: 1px solid #1e1e28;
+    }
+    #saved-panel-title { font-size: 14px; font-weight: 800; color: #e0e0e0; }
+    #saved-panel-close {
+      width: 28px; height: 28px; border-radius: 50%;
+      background: #2a2a35; border: none; color: #888;
+      font-size: 16px; cursor: pointer; display: flex;
+      align-items: center; justify-content: center;
+    }
+ 
+    #saved-list {
+      overflow-y: auto; flex: 1;
+      padding: 10px 0;
+      scrollbar-width: none;
+    }
+    #saved-list::-webkit-scrollbar { display: none; }
+ 
+    .saved-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 18px; cursor: pointer;
+      transition: background 0.1s;
+    }
+    .saved-item:hover { background: #1a1a22; }
+ 
+    .saved-item-num {
+      width: 28px; height: 28px; border-radius: 6px;
+      background: var(--accent, #5b5bd6);
+      color: #fff; font-size: 10px; font-weight: 800;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .saved-item-title { font-size: 13px; color: #e0e0e0; flex: 1; line-height: 1.3; }
+    .saved-item-go    { font-size: 11px; color: #5b5bd6; flex-shrink: 0; }
+ 
+    #saved-empty {
+      padding: 32px 18px; text-align: center;
+      font-size: 13px; color: #555;
+    }
+ 
+    /* ─────────────────────────────────────────────
+       LOADING / ERROR
+    ───────────────────────────────────────────── */
+    #loading {
+      position: fixed; inset: 0; z-index: 200; background: #080810;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 14px;
+    }
     .spinner {
-      width: 32px;
-      height: 32px;
+      width: 32px; height: 32px;
       border: 3px solid rgba(255,255,255,0.1);
       border-top-color: var(--accent, #5b5bd6);
       border-radius: 50%;
       animation: spin 0.8s linear infinite;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
+    #loading p { font-size: 13px; color: rgba(255,255,255,0.4); }
  
-    #loading p {
-      font-size: 13px;
-      color: rgba(255,255,255,0.4);
-    }
- 
-    /* ─────────────────────────────────────────────
-       ERROR STATE
-    ───────────────────────────────────────────── */
     #error {
-      display: none;
-      position: fixed;
-      inset: 0;
-      z-index: 200;
+      display: none; position: fixed; inset: 0; z-index: 200;
       background: #080810;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      padding: 40px;
-      text-align: center;
+      flex-direction: column; align-items: center; justify-content: center;
+      gap: 10px; padding: 40px; text-align: center;
     }
     #error p { font-size: 13px; color: rgba(255,255,255,0.5); line-height: 1.6; }
     #error strong { color: #f87171; }
@@ -309,46 +354,63 @@
 </head>
 <body>
  
-  <!-- Fixed chrome (always visible) -->
+  <!-- Fixed chrome -->
   <div id="header">
-    <div id="channel-name">⚡ Field App Tips</div>
+    <div style="display:flex;align-items:center;">
+      <div id="channel-name">⚡ Field App Tips</div>
+      <!-- Saved badge — shows count, opens drawer -->
+      <div id="saved-badge" onclick="openSavedDrawer()">0 saved</div>
+    </div>
     <div id="counter"></div>
   </div>
   <div id="dots"></div>
   <div id="scroll-hint">↕ &nbsp;swipe for next tip</div>
  
-  <!-- Loading screen -->
-  <div id="loading">
-    <div class="spinner"></div>
-    <p>Loading tips…</p>
+  <!-- Toast -->
+  <div id="toast"></div>
+ 
+  <!-- Saved clips drawer -->
+  <div id="saved-drawer">
+    <div id="saved-backdrop" onclick="closeSavedDrawer()"></div>
+    <div id="saved-panel">
+      <div id="saved-panel-header">
+        <div id="saved-panel-title">🔖 Saved Tips</div>
+        <button id="saved-panel-close" onclick="closeSavedDrawer()">✕</button>
+      </div>
+      <div id="saved-list"></div>
+    </div>
   </div>
  
-  <!-- Error screen -->
+  <!-- Loading -->
+  <div id="loading"><div class="spinner"></div><p>Loading tips…</p></div>
+ 
+  <!-- Error -->
   <div id="error">
     <p><strong>Couldn't load videos.</strong><br>
-    Make sure <code>videos.json</code> is in the same folder as this file and your Wistia IDs are correct.</p>
+    Make sure <code>videos.json</code> is in the same folder as this page and your Wistia IDs are correct.</p>
   </div>
  
-  <!-- Slides are injected here -->
+  <!-- Feed -->
   <div id="feed"></div>
  
 <script>
 // ─────────────────────────────────────────────────────────────
 //  FIELD APP TIPS — TikTok-style feed
-//  Reads from videos.json in the same directory.
-//  Built for Docebo iframe embed + Wistia video hosting.
+//  Features: timeline scrubber, deep-link share, saved clips
+//            + postMessage bridge to Docebo parent
 // ─────────────────────────────────────────────────────────────
  
 // ── State ────────────────────────────────────────────────────
 let currentIndex  = 0;
 let totalSlides   = 0;
 let wistiaHandles = {};   // wistiaId → Wistia video object
-let saved         = [];
+let videosConfig  = [];   // full config array (for saved drawer labels)
+let saved         = [];   // array of slide indices
  
-// Restore saved from localStorage (best-effort)
+// Restore saved from localStorage
 try { saved = JSON.parse(localStorage.getItem('fat-saved') || '[]'); } catch (_) {}
  
-// ── Fetch config & boot ──────────────────────────────────────
+// ── Boot: fetch config ────────────────────────────────────────
 fetch('./videos.json')
   .then(r => { if (!r.ok) throw new Error(r.statusText); return r.json(); })
   .then(config => init(config))
@@ -358,17 +420,14 @@ fetch('./videos.json')
     document.getElementById('error').style.display   = 'flex';
   });
  
-// ── Init: render slides & wire up observers ──────────────────
+// ── Init ─────────────────────────────────────────────────────
 function init(config) {
-  const feed = document.getElementById('feed');
+  videosConfig = config.videos;
+  totalSlides  = config.videos.length;
+  const feed   = document.getElementById('feed');
  
-  // Apply accent colour from config
   document.documentElement.style.setProperty('--accent', config.accentColor || '#5b5bd6');
- 
-  // Update channel name in header
   document.getElementById('channel-name').textContent = '⚡ ' + config.channelName;
- 
-  totalSlides = config.videos.length;
  
   // Build progress dots
   const dotsEl = document.getElementById('dots');
@@ -380,27 +439,24 @@ function init(config) {
   });
  
   // Render slides
-  config.videos.forEach((v, i) => {
-    feed.appendChild(makeSlide(v, i));
-  });
+  config.videos.forEach((v, i) => feed.appendChild(makeSlide(v, i)));
  
-  // Update counter
   updateCounter(0);
- 
-  // Set up Intersection Observer for play/pause
   setupObserver();
- 
-  // Remove loading screen
   document.getElementById('loading').style.display = 'none';
  
-  // Restore saved button states
+  // Restore saved UI
   saved.forEach(idx => {
     const btn = document.querySelector(`[data-save="${idx}"]`);
     if (btn) btn.classList.add('saved');
   });
+  updateSavedBadge();
+ 
+  // Handle deep link (?v=N) — scroll to specific slide on load
+  handleDeepLink();
 }
  
-// ── Build a single slide element ─────────────────────────────
+// ── Build a slide ─────────────────────────────────────────────
 function makeSlide(video, index) {
   const slide = document.createElement('div');
   slide.className = 'slide';
@@ -408,63 +464,146 @@ function makeSlide(video, index) {
   slide.dataset.wistiaId = video.wistiaId;
  
   const tagsHtml = (video.tags || [])
-    .map(t => `<span class="tip-tag">${t}</span>`)
-    .join('');
+    .map(t => `<span class="tip-tag">${t}</span>`).join('');
  
-  // NOTE: Wistia picks up any div with class "wistia_embed wistia_async_HASH"
-  // and replaces it with the video player automatically.
   slide.innerHTML = `
     <div class="wistia-wrap">
       <div class="wistia_embed wistia_async_${video.wistiaId} videoFoam=true"
            style="height:100%;width:100%">&nbsp;</div>
     </div>
+ 
     <div class="overlay">
       <div class="tip-title">${video.title}</div>
       <div class="tip-caption">${video.caption}</div>
       <div class="tip-tags">${tagsHtml}</div>
     </div>
+ 
+    <!-- ── Timeline scrubber ── -->
+    <div class="timeline">
+      <div class="tl-times">
+        <span class="tl-time tl-current">0:00</span>
+        <span class="tl-time right tl-total">0:00</span>
+      </div>
+      <div class="tl-track">
+        <div class="tl-rail">
+          <div class="tl-fill"></div>
+        </div>
+        <div class="tl-thumb"></div>
+      </div>
+    </div>
+ 
+    <!-- ── Side actions ── -->
     <div class="actions">
-      <button class="action-btn" data-save="${index}" onclick="toggleSave(${index})"
-              aria-label="Save this tip">
+      <button class="action-btn" data-save="${index}"
+              onclick="toggleSave(${index})" aria-label="Save this tip">
         <div class="action-icon">🔖</div>
         <div class="action-label">Save</div>
+      </button>
+      <button class="action-btn" data-share="${index}"
+              onclick="shareClip(${index})" aria-label="Share this tip">
+        <div class="action-icon">🔗</div>
+        <div class="action-label">Share</div>
       </button>
     </div>
   `;
  
-  // Register with Wistia API once the player is ready
-  // _wq is Wistia's async queue — safe to push before E-v1.js loads
+  // Register with Wistia API
   window._wq = window._wq || [];
   window._wq.push({
     id: video.wistiaId,
     onReady: function(wVideo) {
       wistiaHandles[video.wistiaId] = wVideo;
+      initTimeline(slide, wVideo);
  
-      // ── Optional: postMessage to Docebo parent on video end ──
-      // Uncomment this block when you're ready to wire up completion tracking.
-      //
-      // wVideo.bind('end', function() {
-      //   window.parent.postMessage({
-      //     type:    'fat-clip-complete',
-      //     wistiaId: video.wistiaId,
-      //     tipNum:   video.tipNumber,
-      //     title:    video.title,
-      //   }, '*');
-      // });
+      // ── postMessage to Docebo on clip completion ──
+      // Lets the parent Docebo page know a clip was fully watched.
+      // See the "Docebo listener" snippet at the bottom of this file.
+      wVideo.bind('end', function() {
+        window.parent.postMessage({
+          type:     'fat-clip-complete',
+          index:    index,
+          wistiaId: video.wistiaId,
+          title:    video.title,
+        }, '*');
+      });
     }
   });
  
   return slide;
 }
  
-// ── Intersection Observer: play visible slide, pause others ──
+// ── Timeline: wire up scrubbing + progress updates ────────────
+function initTimeline(slideEl, wVideo) {
+  const fillEl    = slideEl.querySelector('.tl-fill');
+  const thumbEl   = slideEl.querySelector('.tl-thumb');
+  const currEl    = slideEl.querySelector('.tl-current');
+  const totalEl   = slideEl.querySelector('.tl-total');
+  const trackEl   = slideEl.querySelector('.tl-track');
+ 
+  // Update bar as video plays
+  wVideo.bind('timechange', function(t) {
+    const dur = wVideo.duration();
+    if (!dur) return;
+    const pct = Math.min(100, (t / dur) * 100);
+    fillEl.style.width   = pct + '%';
+    thumbEl.style.left   = pct + '%';
+    currEl.textContent   = formatTime(t);
+  });
+ 
+  // Set total duration once video starts
+  wVideo.bind('play', function() {
+    totalEl.textContent = formatTime(wVideo.duration());
+  });
+ 
+  // Seek on mouse click
+  trackEl.addEventListener('click', function(e) {
+    seekTo(wVideo, e.clientX, trackEl);
+  });
+ 
+  // Seek on touch (drag along timeline)
+  trackEl.addEventListener('touchstart', function(e) {
+    e.preventDefault();
+    seekTo(wVideo, e.touches[0].clientX, trackEl);
+  }, { passive: false });
+ 
+  trackEl.addEventListener('touchmove', function(e) {
+    e.preventDefault();
+    seekTo(wVideo, e.touches[0].clientX, trackEl);
+  }, { passive: false });
+ 
+  // Mouse drag support
+  let dragging = false;
+  trackEl.addEventListener('mousedown', function(e) {
+    dragging = true;
+    seekTo(wVideo, e.clientX, trackEl);
+  });
+  document.addEventListener('mousemove', function(e) {
+    if (!dragging) return;
+    seekTo(wVideo, e.clientX, trackEl);
+  });
+  document.addEventListener('mouseup', function() { dragging = false; });
+}
+ 
+function seekTo(wVideo, clientX, trackEl) {
+  const rect = trackEl.getBoundingClientRect();
+  const pct  = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+  wVideo.time(pct * wVideo.duration());
+}
+ 
+function formatTime(secs) {
+  if (!secs || isNaN(secs)) return '0:00';
+  const m = Math.floor(secs / 60);
+  const s = Math.floor(secs % 60);
+  return m + ':' + (s < 10 ? '0' : '') + s;
+}
+ 
+// ── Intersection Observer: play visible, pause others ─────────
 function setupObserver() {
   const observer = new IntersectionObserver(entries => {
     entries.forEach(entry => {
       const wId    = entry.target.dataset.wistiaId;
       const handle = wistiaHandles[wId];
       const index  = parseInt(entry.target.dataset.index, 10);
- 
       if (entry.isIntersecting) {
         handle && handle.play();
         updateUI(index);
@@ -472,47 +611,192 @@ function setupObserver() {
         handle && handle.pause();
       }
     });
-  }, {
-    threshold: 0.65   // slide must be 65% visible before it plays
-  });
+  }, { threshold: 0.65 });
  
   document.querySelectorAll('.slide').forEach(s => observer.observe(s));
 }
  
-// ── Update dots + counter when active slide changes ──────────
 function updateUI(newIndex) {
-  if (newIndex === currentIndex) return;
- 
-  // Dots
+  if (newIndex === currentIndex && document.getElementById('dot-0')) return;
   const prevDot = document.getElementById('dot-' + currentIndex);
   const newDot  = document.getElementById('dot-' + newIndex);
   if (prevDot) prevDot.classList.remove('active');
   if (newDot)  newDot.classList.add('active');
- 
   currentIndex = newIndex;
   updateCounter(newIndex);
 }
  
 function updateCounter(index) {
-  document.getElementById('counter').textContent =
-    (index + 1) + ' / ' + totalSlides;
+  document.getElementById('counter').textContent = (index + 1) + ' / ' + totalSlides;
 }
  
-// ── Save toggle ───────────────────────────────────────────────
+// ── Deep link: read ?v=N and scroll to that slide ─────────────
+function handleDeepLink() {
+  const params = new URLSearchParams(window.location.search);
+  const v = parseInt(params.get('v'), 10);
+  if (isNaN(v) || v < 0 || v >= totalSlides) return;
+ 
+  // Short delay lets the feed finish rendering before we scroll
+  setTimeout(function() {
+    const feedEl = document.getElementById('feed');
+    feedEl.scrollTo({ top: v * feedEl.clientHeight, behavior: 'instant' });
+  }, 150);
+}
+ 
+// ── Share: copy deep-link URL for the current clip ────────────
+function shareClip(index) {
+  const video = videosConfig[index];
+  const url   = new URL(window.location.href);
+  url.searchParams.set('v', index);
+  const shareUrl = url.toString();
+ 
+  const btn = document.querySelector(`[data-share="${index}"]`);
+  if (btn) btn.classList.add('sharing');
+  setTimeout(function() { if (btn) btn.classList.remove('sharing'); }, 1000);
+ 
+  // Native share sheet on mobile
+  if (navigator.share) {
+    navigator.share({ title: video.title, url: shareUrl })
+      .catch(function() {}); // user dismissed — that's fine
+    return;
+  }
+ 
+  // Fallback: copy to clipboard
+  navigator.clipboard.writeText(shareUrl)
+    .then(function()  { showToast('🔗 Link copied!'); })
+    .catch(function() { showToast('Copy this link: ' + shareUrl); });
+}
+ 
+// ── Save: toggle save state, sync to localStorage + Docebo ───
 function toggleSave(index) {
-  const btn = document.querySelector(`[data-save="${index}"]`);
-  const pos = saved.indexOf(index);
+  const video = videosConfig[index];
+  const btn   = document.querySelector(`[data-save="${index}"]`);
+  const pos   = saved.indexOf(index);
+  let action;
  
   if (pos === -1) {
     saved.push(index);
     btn && btn.classList.add('saved');
+    action = 'add';
+    showToast('🔖 Tip saved!');
   } else {
     saved.splice(pos, 1);
     btn && btn.classList.remove('saved');
+    action = 'remove';
+    showToast('Removed from saved');
   }
  
+  // Persist to localStorage
   try { localStorage.setItem('fat-saved', JSON.stringify(saved)); } catch (_) {}
+ 
+  updateSavedBadge();
+ 
+  // ── postMessage to Docebo parent ──────────────────────────
+  // The parent Docebo page can listen for this and display saved
+  // clips in a native Docebo widget or store them via the API.
+  // See the "Docebo listener" snippet at the bottom of this file.
+  window.parent.postMessage({
+    type:        'fat-save-update',
+    action:      action,                   // 'add' or 'remove'
+    index:       index,
+    wistiaId:    video ? video.wistiaId : '',
+    title:       video ? video.title    : '',
+    savedAll:    saved.slice(),            // full saved array
+    savedTitles: saved.map(function(i) {
+      return videosConfig[i] ? videosConfig[i].title : '';
+    }),
+  }, '*');
 }
+ 
+// ── Saved badge in header ─────────────────────────────────────
+function updateSavedBadge() {
+  const badge = document.getElementById('saved-badge');
+  if (saved.length > 0) {
+    badge.style.display = 'inline-block';
+    badge.textContent   = saved.length + ' saved';
+  } else {
+    badge.style.display = 'none';
+  }
+}
+ 
+// ── Saved drawer ─────────────────────────────────────────────
+function openSavedDrawer() {
+  const list = document.getElementById('saved-list');
+  list.innerHTML = '';
+ 
+  if (saved.length === 0) {
+    list.innerHTML = '<div id="saved-empty">No saved tips yet. Tap 🔖 on any clip.</div>';
+  } else {
+    saved.forEach(function(idx) {
+      const v    = videosConfig[idx];
+      if (!v) return;
+      const item = document.createElement('div');
+      item.className = 'saved-item';
+      item.innerHTML = `
+        <div class="saved-item-num">${idx + 1}</div>
+        <div class="saved-item-title">${v.title}</div>
+        <div class="saved-item-go">Watch →</div>
+      `;
+      item.onclick = function() {
+        closeSavedDrawer();
+        const feedEl = document.getElementById('feed');
+        feedEl.scrollTo({ top: idx * feedEl.clientHeight, behavior: 'smooth' });
+      };
+      list.appendChild(item);
+    });
+  }
+ 
+  document.getElementById('saved-drawer').classList.add('open');
+}
+ 
+function closeSavedDrawer() {
+  document.getElementById('saved-drawer').classList.remove('open');
+}
+ 
+// ── Toast notification ────────────────────────────────────────
+let toastTimer;
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function() { el.classList.remove('show'); }, 2200);
+}
+ 
+// ─────────────────────────────────────────────────────────────
+//  DOCEBO PARENT PAGE LISTENER
+//  ─────────────────────────────────────────────────────────────
+//  Add the snippet below to the Docebo Custom HTML widget that
+//  WRAPS the iframe (the one on the Docebo homepage).
+//  It catches postMessage events from this feed and can:
+//    • display saved clips in a Docebo widget
+//    • call the Docebo REST API to bookmark content
+//    • log completion events
+//
+//  SNIPPET TO PASTE INTO THE DOCEBO WRAPPER WIDGET:
+//
+//  <script>
+//    window.addEventListener('message', function(e) {
+//      // Safety: only accept messages from your GitHub Pages domain
+//      // if (e.origin !== 'https://YOUR-USERNAME.github.io') return;
+//
+//      if (e.data.type === 'fat-save-update') {
+//        console.log('Save action:', e.data.action, e.data.title);
+//        // e.data.savedTitles = array of all currently saved clip titles
+//        // To call Docebo API here, you need the user's auth token.
+//        // The simplest approach: store in a Docebo "User Extra Field"
+//        // via PATCH /api/learn/v1/users/{userId}/extrafields
+//      }
+//
+//      if (e.data.type === 'fat-clip-complete') {
+//        console.log('Clip completed:', e.data.title);
+//        // Optionally fire a Docebo xAPI statement here
+//      }
+//    });
+//  </script>
+//
+// ─────────────────────────────────────────────────────────────
 </script>
 </body>
 </html>
+ 
