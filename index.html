@@ -7,9 +7,6 @@
   <script src="https://fast.wistia.com/assets/external/E-v1.js" async></script>
  
   <style>
-    /* ─────────────────────────────────────────────
-       BASE RESET
-    ───────────────────────────────────────────── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
  
     html, body {
@@ -19,9 +16,7 @@
       -webkit-font-smoothing: antialiased;
     }
  
-    /* ─────────────────────────────────────────────
-       FEED WRAPPER
-    ───────────────────────────────────────────── */
+    /* ── Feed ───────────────────────────────────────────────── */
     #feed {
       width: 100%; height: 100%;
       overflow-y: scroll;
@@ -31,164 +26,62 @@
     }
     #feed::-webkit-scrollbar { display: none; }
  
-    /* ─────────────────────────────────────────────
-       SLIDE
-    ───────────────────────────────────────────── */
+    /* ── Slide ──────────────────────────────────────────────── */
     .slide {
-      position: relative;
-      width: 100%;
+      position: relative; width: 100%;
       height: 100vh; height: 100dvh;
-      scroll-snap-align: start;
-      scroll-snap-stop: always;
-      background: #080810;
-      overflow: hidden;
+      scroll-snap-align: start; scroll-snap-stop: always;
+      background: #080810; overflow: hidden;
     }
  
-    /* ─────────────────────────────────────────────
-       WISTIA VIDEO — fills the slide
-    ───────────────────────────────────────────── */
-    .wistia-wrap {
-      position: absolute;
-      inset: 0;
-    }
+    /* ── Wistia video ───────────────────────────────────────── */
+    .wistia-wrap { position: absolute; inset: 0; }
     .wistia_embed { width: 100% !important; height: 100% !important; }
  
-    /* ─────────────────────────────────────────────
-       BOTTOM TEXT OVERLAY
-       Extra bottom padding leaves room for timeline
-    ───────────────────────────────────────────── */
+    /* ── Text overlay ───────────────────────────────────────── */
     .overlay {
-      position: absolute;
-      bottom: 0; left: 0;
-      right: 68px;
-      padding: 80px 18px 72px; /* 72px bottom = timeline height */
-      background: linear-gradient(
-        to bottom,
-        transparent 0%,
-        rgba(0,0,0,0.05) 30%,
-        rgba(0,0,0,0.75) 70%,
-        rgba(0,0,0,0.92) 100%
-      );
+      position: absolute; bottom: 0; left: 0; right: 68px;
+      padding: 80px 18px 72px;
+      background: linear-gradient(to bottom,
+        transparent 0%, rgba(0,0,0,0.05) 30%,
+        rgba(0,0,0,0.75) 70%, rgba(0,0,0,0.92) 100%);
       pointer-events: none;
     }
- 
     .tip-release { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.45); margin-bottom: 6px; }
     .tip-title   { font-size: 16px; font-weight: 700; color: #fff; line-height: 1.3; margin-bottom: 8px; }
     .tip-caption { font-size: 13px; color: rgba(255,255,255,0.82); line-height: 1.55; margin-bottom: 10px; }
-    .tip-tags    { display: flex; flex-wrap: wrap; gap: 6px; }
-    .tip-tag     { font-size: 11px; color: var(--accent, #5b5bd6); font-weight: 600; }
+    .tip-tags    { display: flex; flex-wrap: wrap; gap: 6px; pointer-events: all; }
+    .tip-tag     { font-size: 11px; color: var(--accent, #5b5bd6); font-weight: 600; cursor: pointer; padding: 2px 0; -webkit-tap-highlight-color: transparent; }
     .tip-tag::before { content: '#'; }
+    .tip-tag:hover { text-decoration: underline; }
  
-    /* ─────────────────────────────────────────────
-       TIMELINE BAR — sits at the very bottom
-    ───────────────────────────────────────────── */
+    /* ── Timeline ───────────────────────────────────────────── */
     .timeline {
-      position: absolute;
-      bottom: 0; left: 0; right: 0;
-      z-index: 20;
-      padding: 12px 16px 10px;
+      position: absolute; bottom: 0; left: 0; right: 0;
+      z-index: 20; padding: 12px 16px 10px;
       background: linear-gradient(transparent, rgba(0,0,0,0.7));
     }
- 
-    /* Time labels */
-    .tl-times {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 6px;
-    }
-    .tl-time {
-      font-size: 10px;
-      font-weight: 600;
-      color: rgba(255,255,255,0.6);
-      font-variant-numeric: tabular-nums;
-      min-width: 32px;
-    }
+    .tl-times { display: flex; justify-content: space-between; margin-bottom: 6px; }
+    .tl-time  { font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.6); font-variant-numeric: tabular-nums; min-width: 32px; }
     .tl-time.right { text-align: right; }
- 
-    /* Track (clickable/draggable bar) */
     .tl-track {
-      position: relative;
-      width: 100%;
-      height: 20px;           /* tall touch target */
-      display: flex;
-      align-items: center;
-      cursor: pointer;
+      position: relative; width: 100%; height: 20px;
+      display: flex; align-items: center; cursor: pointer;
     }
+    .tl-rail  { position: absolute; left: 0; right: 0; height: 3px; background: rgba(255,255,255,0.2); border-radius: 2px; overflow: hidden; }
+    .tl-fill  { height: 100%; width: 0%; background: var(--accent, #5b5bd6); border-radius: 2px; transition: width 0.1s linear; pointer-events: none; }
+    .tl-thumb { position: absolute; left: 0%; top: 50%; transform: translate(-50%,-50%); width: 12px; height: 12px; border-radius: 50%; background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,0.5); transition: left 0.1s linear; pointer-events: none; }
  
-    /* Background rail */
-    .tl-rail {
-      position: absolute;
-      left: 0; right: 0;
-      height: 3px;
-      background: rgba(255,255,255,0.2);
-      border-radius: 2px;
-      overflow: hidden;
-    }
- 
-    /* Filled progress */
-    .tl-fill {
-      height: 100%;
-      width: 0%;
-      background: var(--accent, #5b5bd6);
-      border-radius: 2px;
-      transition: width 0.1s linear;
-      pointer-events: none;
-    }
- 
-    /* Draggable thumb */
-    .tl-thumb {
-      position: absolute;
-      left: 0%;
-      top: 50%;
-      transform: translate(-50%, -50%);
-      width: 12px; height: 12px;
-      border-radius: 50%;
-      background: #fff;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.5);
-      transition: left 0.1s linear;
-      pointer-events: none;
-    }
- 
-    /* ─────────────────────────────────────────────
-       SIDE ACTION BUTTONS
-    ───────────────────────────────────────────── */
-    .actions {
-      position: absolute;
-      right: 12px; bottom: 80px;
-      display: flex; flex-direction: column;
-      align-items: center; gap: 20px;
-    }
- 
-    .action-btn {
-      display: flex; flex-direction: column;
-      align-items: center; gap: 4px;
-      cursor: pointer;
-      background: none; border: none; padding: 0;
-      -webkit-tap-highlight-color: transparent;
-    }
- 
-    .action-icon {
-      width: 44px; height: 44px;
-      border-radius: 50%;
-      background: rgba(255,255,255,0.14);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 19px;
-      transition: background 0.15s, transform 0.12s;
-    }
- 
-    .action-btn:hover .action-icon,
-    .action-btn:focus .action-icon { background: rgba(255,255,255,0.26); transform: scale(1.08); }
- 
+    /* ── Side action buttons ────────────────────────────────── */
+    .actions { position: absolute; right: 12px; bottom: 80px; display: flex; flex-direction: column; align-items: center; gap: 20px; }
+    .action-btn { display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; background: none; border: none; padding: 0; -webkit-tap-highlight-color: transparent; }
+    .action-icon { width: 44px; height: 44px; border-radius: 50%; background: rgba(255,255,255,0.14); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; font-size: 19px; transition: background 0.15s, transform 0.12s; }
+    .action-btn:hover .action-icon, .action-btn:focus .action-icon { background: rgba(255,255,255,0.26); transform: scale(1.08); }
     .action-btn.saved .action-icon   { background: rgba(91,91,214,0.55); }
     .action-btn.sharing .action-icon { background: rgba(255,255,255,0.3); }
- 
     .action-label { font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.7); }
  
-    /* ─────────────────────────────────────────────
-       FIXED HEADER
-    ───────────────────────────────────────────── */
+    /* ── Fixed header ───────────────────────────────────────── */
     #header {
       position: fixed; top: 0; left: 0; right: 0; z-index: 100;
       padding: 16px 18px 12px;
@@ -198,168 +91,237 @@
     }
     #channel-name { font-size: 14px; font-weight: 800; color: #fff; }
     #counter      { font-size: 12px; color: rgba(255,255,255,0.5); font-weight: 600; }
- 
-    /* Saved clips counter badge in header */
-    #saved-badge {
-      display: none;
-      pointer-events: all;
-      cursor: pointer;
-      background: var(--accent, #5b5bd6);
-      color: #fff;
+    #saved-badge  {
+      display: none; pointer-events: all; cursor: pointer;
+      background: var(--accent, #5b5bd6); color: #fff;
       font-size: 10px; font-weight: 800;
-      padding: 3px 8px; border-radius: 10px;
-      margin-left: 10px;
+      padding: 3px 8px; border-radius: 10px; margin-left: 10px;
     }
  
-    /* ─────────────────────────────────────────────
-       PROGRESS DOTS
-    ───────────────────────────────────────────── */
-    #dots {
-      position: fixed; right: 6px; top: 50%;
-      transform: translateY(-50%); z-index: 100;
-      display: flex; flex-direction: column;
-      align-items: center; gap: 5px;
-      pointer-events: none;
-    }
+    /* ── Progress dots ──────────────────────────────────────── */
+    #dots { position: fixed; right: 6px; top: 50%; transform: translateY(-50%); z-index: 100; display: flex; flex-direction: column; align-items: center; gap: 5px; pointer-events: none; }
     .dot { width: 3px; height: 14px; border-radius: 2px; background: rgba(255,255,255,0.2); transition: height 0.2s, background 0.2s; }
     .dot.active { height: 24px; background: #fff; }
  
-    /* ─────────────────────────────────────────────
-       SCROLL HINT
-    ───────────────────────────────────────────── */
-    #scroll-hint {
-      position: fixed; bottom: 12px; left: 50%;
-      transform: translateX(-50%); z-index: 100;
-      font-size: 11px; color: rgba(255,255,255,0.35);
-      pointer-events: none;
-      animation: fadeHint 1s ease 3s forwards;
-      white-space: nowrap;
-    }
+    /* ── Scroll hint ────────────────────────────────────────── */
+    #scroll-hint { position: fixed; bottom: 12px; left: 50%; transform: translateX(-50%); z-index: 100; font-size: 11px; color: rgba(255,255,255,0.35); pointer-events: none; animation: fadeHint 1s ease 3s forwards; white-space: nowrap; }
     @keyframes fadeHint { to { opacity: 0; } }
  
-    /* ─────────────────────────────────────────────
-       TOAST NOTIFICATION
-    ───────────────────────────────────────────── */
+    /* ── Toast ──────────────────────────────────────────────── */
     #toast {
       position: fixed; bottom: 80px; left: 50%;
       transform: translateX(-50%) translateY(10px);
-      z-index: 300;
-      background: rgba(30,30,40,0.95);
+      z-index: 300; background: rgba(30,30,40,0.95);
       border: 1px solid rgba(255,255,255,0.12);
       color: #fff; font-size: 12px; font-weight: 600;
       padding: 9px 18px; border-radius: 20px;
       opacity: 0; pointer-events: none;
       transition: opacity 0.2s, transform 0.2s;
-      white-space: nowrap;
-      backdrop-filter: blur(10px);
+      white-space: nowrap; backdrop-filter: blur(10px);
     }
-    #toast.show {
-      opacity: 1;
+    #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+ 
+    /* ── "Back to feed" floating pill ───────────────────────── */
+    /* Appears after jumping to a video from saved drawer or share link */
+    #back-pill {
+      position: fixed; top: 60px; left: 50%;
+      transform: translateX(-50%) translateY(-6px);
+      z-index: 150;
+      background: rgba(20,20,30,0.92);
+      border: 1px solid rgba(255,255,255,0.15);
+      color: #fff; font-size: 12px; font-weight: 700;
+      padding: 8px 16px; border-radius: 20px;
+      cursor: pointer; opacity: 0; pointer-events: none;
+      transition: opacity 0.25s, transform 0.25s;
+      white-space: nowrap; backdrop-filter: blur(10px);
+    }
+    #back-pill.show {
+      opacity: 1; pointer-events: all;
       transform: translateX(-50%) translateY(0);
     }
  
-    /* ─────────────────────────────────────────────
-       SAVED CLIPS DRAWER
-    ───────────────────────────────────────────── */
-    #saved-drawer {
-      position: fixed; inset: 0; z-index: 200;
-      display: none;
-    }
+    /* ── Saved clips drawer ─────────────────────────────────── */
+    #saved-drawer { position: fixed; inset: 0; z-index: 200; display: none; }
     #saved-drawer.open { display: block; }
- 
-    #saved-backdrop {
-      position: absolute; inset: 0;
-      background: rgba(0,0,0,0.6);
-      backdrop-filter: blur(4px);
-    }
- 
-    #saved-panel {
-      position: absolute; bottom: 0; left: 0; right: 0;
-      background: #13131a;
-      border-top: 1px solid #2a2a35;
-      border-radius: 16px 16px 0 0;
-      padding: 16px 0 32px;
-      max-height: 65vh;
-      display: flex; flex-direction: column;
-    }
- 
-    #saved-panel-header {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 0 18px 14px;
-      border-bottom: 1px solid #1e1e28;
-    }
-    #saved-panel-title { font-size: 14px; font-weight: 800; color: #e0e0e0; }
-    #saved-panel-close {
-      width: 28px; height: 28px; border-radius: 50%;
-      background: #2a2a35; border: none; color: #888;
-      font-size: 16px; cursor: pointer; display: flex;
-      align-items: center; justify-content: center;
-    }
- 
-    #saved-list {
-      overflow-y: auto; flex: 1;
-      padding: 10px 0;
-      scrollbar-width: none;
-    }
+    #saved-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); }
+    #saved-panel { position: absolute; bottom: 0; left: 0; right: 0; background: #13131a; border-top: 1px solid #2a2a35; border-radius: 16px 16px 0 0; padding: 16px 0 32px; max-height: 65vh; display: flex; flex-direction: column; }
+    #saved-panel-header { display: flex; align-items: center; justify-content: space-between; padding: 0 18px 14px; border-bottom: 1px solid #1e1e28; }
+    #saved-panel-title  { font-size: 14px; font-weight: 800; color: #e0e0e0; }
+    #saved-panel-close  { width: 28px; height: 28px; border-radius: 50%; background: #2a2a35; border: none; color: #888; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    #saved-list { overflow-y: auto; flex: 1; padding: 10px 0; scrollbar-width: none; }
     #saved-list::-webkit-scrollbar { display: none; }
- 
-    .saved-item {
-      display: flex; align-items: center; gap: 12px;
-      padding: 10px 18px; cursor: pointer;
-      transition: background 0.1s;
-    }
+    .saved-item { display: flex; align-items: center; gap: 12px; padding: 10px 18px; cursor: pointer; transition: background 0.1s; }
     .saved-item:hover { background: #1a1a22; }
- 
-    .saved-item-num {
-      width: 28px; height: 28px; border-radius: 6px;
-      background: var(--accent, #5b5bd6);
-      color: #fff; font-size: 10px; font-weight: 800;
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0;
-    }
+    .saved-item-num   { width: 28px; height: 28px; border-radius: 6px; background: var(--accent, #5b5bd6); color: #fff; font-size: 10px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .saved-item-num.archived { background: #3a3a3a; }
     .saved-item-title { font-size: 13px; color: #e0e0e0; flex: 1; line-height: 1.3; }
     .saved-item-go    { font-size: 11px; color: #5b5bd6; flex-shrink: 0; }
+    .saved-item-go.archived { color: #555; }
+    #saved-empty      { padding: 32px 18px; text-align: center; font-size: 13px; color: #555; }
  
-    #saved-empty {
-      padding: 32px 18px; text-align: center;
-      font-size: 13px; color: #555;
+    /* ── Archive overlay ────────────────────────────────────── */
+    /* Shown when accessing an inactive video via share link     */
+    #archive-overlay {
+      position: fixed; inset: 0; z-index: 150;
+      background: #000;
+      display: none; flex-direction: column;
+    }
+    #archive-overlay.open { display: flex; }
+ 
+    #archive-bar {
+      position: absolute; top: 0; left: 0; right: 0; z-index: 10;
+      padding: 16px 18px;
+      display: flex; align-items: center; justify-content: space-between;
+      background: linear-gradient(rgba(0,0,0,0.75), transparent);
+    }
+    #archive-back {
+      display: flex; align-items: center; gap: 6px;
+      background: rgba(255,255,255,0.15);
+      border: none; color: #fff; font-size: 12px; font-weight: 700;
+      padding: 8px 14px; border-radius: 20px; cursor: pointer;
+      backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+      transition: background 0.15s;
+    }
+    #archive-back:hover { background: rgba(255,255,255,0.25); }
+ 
+    #archive-badge {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.1em;
+      text-transform: uppercase; color: rgba(255,255,255,0.45);
+      background: rgba(0,0,0,0.4); padding: 4px 10px; border-radius: 10px;
     }
  
-    /* ─────────────────────────────────────────────
-       LOADING / ERROR
-    ───────────────────────────────────────────── */
-    #loading {
-      position: fixed; inset: 0; z-index: 200; background: #080810;
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center; gap: 14px;
+    #archive-video-wrap { flex: 1; position: relative; }
+    #archive-video-wrap .wistia_embed { position: absolute; inset: 0; }
+ 
+    #archive-info {
+      position: absolute; bottom: 0; left: 0; right: 0; z-index: 10;
+      padding: 60px 18px 20px;
+      background: linear-gradient(transparent, rgba(0,0,0,0.85));
+      pointer-events: none;
     }
-    .spinner {
-      width: 32px; height: 32px;
-      border: 3px solid rgba(255,255,255,0.1);
-      border-top-color: var(--accent, #5b5bd6);
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
+    #archive-title   { font-size: 16px; font-weight: 700; color: #fff; line-height: 1.3; margin-bottom: 6px; }
+    #archive-caption { font-size: 13px; color: rgba(255,255,255,0.75); line-height: 1.5; }
+ 
+    /* ── Hashtag overlay ────────────────────────────────────── */
+    #hashtag-overlay {
+      position: fixed; inset: 0; z-index: 160;
+      background: #0a0a0f;
+      display: none; flex-direction: column;
+      transform: translateY(100%);
+      transition: transform 0.32s cubic-bezier(0.32, 0.72, 0, 1);
     }
+    #hashtag-overlay.open { display: flex; }
+    #hashtag-overlay.animate { transform: translateY(0); }
+ 
+    #hashtag-header {
+      flex-shrink: 0;
+      padding: 16px 18px 0;
+      border-bottom: 1px solid #1e1e28;
+    }
+    #hashtag-back {
+      background: none; border: none; color: rgba(255,255,255,0.6);
+      font-size: 13px; font-weight: 600; cursor: pointer; padding: 0 0 12px;
+      display: flex; align-items: center; gap: 6px;
+    }
+    #hashtag-back:hover { color: #fff; }
+    #hashtag-name {
+      font-size: 22px; font-weight: 800; color: #fff;
+      margin-bottom: 4px;
+    }
+    #hashtag-name::before { content: '#'; color: var(--accent, #5b5bd6); }
+    #hashtag-count { font-size: 13px; color: #555; margin-bottom: 14px; }
+ 
+    #hashtag-grid {
+      flex: 1; overflow-y: auto;
+      padding: 12px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 3px;
+      align-content: start;
+      scrollbar-width: none;
+    }
+    #hashtag-grid::-webkit-scrollbar { display: none; }
+ 
+    .hg-card {
+      position: relative;
+      aspect-ratio: 9/14;
+      border-radius: 6px;
+      overflow: hidden;
+      cursor: pointer;
+      background: #13131a;
+    }
+    .hg-card:hover { opacity: 0.85; }
+ 
+    /* Thumbnail — uses Wistia URL if provided, else gradient */
+    .hg-thumb {
+      position: absolute; inset: 0;
+      background-size: cover; background-position: center;
+    }
+ 
+    /* Gradient palettes for cards without thumbnails */
+    .hg-grad-0 { background: linear-gradient(160deg, #1a2040, #0d1020); }
+    .hg-grad-1 { background: linear-gradient(160deg, #1a2a1a, #0d1a0d); }
+    .hg-grad-2 { background: linear-gradient(160deg, #2a1a1a, #1a0d0d); }
+    .hg-grad-3 { background: linear-gradient(160deg, #1a1a2a, #0d0d1a); }
+    .hg-grad-4 { background: linear-gradient(160deg, #2a1a2a, #1a0d1a); }
+    .hg-grad-5 { background: linear-gradient(160deg, #1a2a2a, #0d1a1a); }
+ 
+    /* Initial letter shown when no thumbnail */
+    .hg-initial {
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%, -60%);
+      font-size: 28px; font-weight: 900;
+      color: rgba(255,255,255,0.15);
+    }
+ 
+    /* Bottom info bar */
+    .hg-info {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      padding: 28px 8px 8px;
+      background: linear-gradient(transparent, rgba(0,0,0,0.88));
+    }
+    .hg-title {
+      font-size: 10px; font-weight: 700; color: #fff;
+      line-height: 1.3;
+      display: -webkit-box; -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .hg-release {
+      font-size: 9px; color: rgba(255,255,255,0.4);
+      margin-top: 3px; font-weight: 600;
+    }
+ 
+    /* Archived badge on card */
+    .hg-archived-badge {
+      position: absolute; top: 6px; left: 6px;
+      background: rgba(0,0,0,0.7); color: rgba(255,255,255,0.4);
+      font-size: 8px; font-weight: 700; letter-spacing: 0.06em;
+      padding: 2px 5px; border-radius: 3px; text-transform: uppercase;
+    }
+ 
+    /* Empty state */
+    #hashtag-empty {
+      grid-column: 1 / -1;
+      padding: 48px 18px; text-align: center;
+      font-size: 13px; color: #444;
+    }
+ 
+    /* ── Loading / Error ────────────────────────────────────── */
+    #loading { position: fixed; inset: 0; z-index: 200; background: #080810; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; }
+    .spinner { width: 32px; height: 32px; border: 3px solid rgba(255,255,255,0.1); border-top-color: var(--accent, #5b5bd6); border-radius: 50%; animation: spin 0.8s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
     #loading p { font-size: 13px; color: rgba(255,255,255,0.4); }
- 
-    #error {
-      display: none; position: fixed; inset: 0; z-index: 200;
-      background: #080810;
-      flex-direction: column; align-items: center; justify-content: center;
-      gap: 10px; padding: 40px; text-align: center;
-    }
+    #error { display: none; position: fixed; inset: 0; z-index: 200; background: #080810; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding: 40px; text-align: center; }
     #error p { font-size: 13px; color: rgba(255,255,255,0.5); line-height: 1.6; }
     #error strong { color: #f87171; }
   </style>
 </head>
 <body>
  
-  <!-- Fixed chrome -->
+  <!-- Fixed header -->
   <div id="header">
     <div style="display:flex;align-items:center;">
       <div id="channel-name">⚡ Field App Tips</div>
-      <!-- Saved badge — shows count, opens drawer -->
       <div id="saved-badge" onclick="openSavedDrawer()">0 saved</div>
     </div>
     <div id="counter"></div>
@@ -367,10 +329,13 @@
   <div id="dots"></div>
   <div id="scroll-hint">↕ &nbsp;swipe for next tip</div>
  
+  <!-- Back to feed pill (shown after jumping from saved/share) -->
+  <div id="back-pill" onclick="goBackToFeed()">↑ Back to feed</div>
+ 
   <!-- Toast -->
   <div id="toast"></div>
  
-  <!-- Saved clips drawer -->
+  <!-- Saved drawer -->
   <div id="saved-drawer">
     <div id="saved-backdrop" onclick="closeSavedDrawer()"></div>
     <div id="saved-panel">
@@ -382,80 +347,106 @@
     </div>
   </div>
  
-  <!-- Loading -->
-  <div id="loading"><div class="spinner"></div><p>Loading tips…</p></div>
- 
-  <!-- Error -->
-  <div id="error">
-    <p><strong>Couldn't load videos.</strong><br>
-    Make sure <code>videos.json</code> is in the same folder as this page and your Wistia IDs are correct.</p>
+  <!-- Hashtag browse overlay -->
+  <div id="hashtag-overlay">
+    <div id="hashtag-header">
+      <button id="hashtag-back" onclick="closeHashtag()">← Back</button>
+      <div id="hashtag-name"></div>
+      <div id="hashtag-count"></div>
+    </div>
+    <div id="hashtag-grid"></div>
   </div>
  
-  <!-- Feed -->
+  <!-- Archive overlay — shown for inactive videos accessed via link -->
+  <div id="archive-overlay">
+    <div id="archive-bar">
+      <button id="archive-back" onclick="closeArchive()">← Current Tips</button>
+      <span id="archive-badge">📦 Archived</span>
+    </div>
+    <div id="archive-video-wrap"></div>
+    <div id="archive-info">
+      <div id="archive-title"></div>
+      <div id="archive-caption"></div>
+    </div>
+  </div>
+ 
+  <!-- Loading / Error -->
+  <div id="loading"><div class="spinner"></div><p>Loading tips…</p></div>
+  <div id="error"><p><strong>Couldn't load videos.</strong><br>Make sure <code>videos.json</code> is in the same folder as this page.</p></div>
+ 
+  <!-- Feed (slides injected here) -->
   <div id="feed"></div>
  
 <script>
 // ─────────────────────────────────────────────────────────────
-//  FIELD APP TIPS — TikTok-style feed
-//  Features: timeline scrubber, deep-link share, saved clips
-//            + postMessage bridge to Docebo parent
+//  FIELD APP TIPS FEED
+//  · Only "active: true" videos appear in the main feed
+//  · All videos (active + inactive) remain accessible via share link
+//  · Share links use ?v=WISTIA_ID — permanent across releases
+//  · Back-to-feed pill appears after any jump from saved/link
 // ─────────────────────────────────────────────────────────────
  
 // ── State ────────────────────────────────────────────────────
-let currentIndex  = 0;
-let totalSlides   = 0;
-let wistiaHandles = {};   // wistiaId → Wistia video object
-let videosConfig  = [];   // full config array (for saved drawer labels)
-let saved         = [];   // array of wistiaIds (NOT indices — stable across releases)
+let allVideos    = [];   // every video in videos.json (inc. inactive)
+let activeVideos = [];   // only active:true — what the feed renders
+let videosConfig = [];   // alias of activeVideos (used by save functions)
+let currentIndex = 0;
+let totalSlides  = 0;
+let wistiaHandles = {};
+let saved = [];          // array of wistiaIds
  
-// Restore saved from localStorage
+let backPillTimer = null;
+let scrollBeforeJump = null;   // index we were on before a jump
+ 
 try { saved = JSON.parse(localStorage.getItem('fat-saved') || '[]'); } catch (_) {}
  
-// ── Boot: fetch config ────────────────────────────────────────
+// ── Boot ─────────────────────────────────────────────────────
 fetch('./videos.json')
   .then(r => { if (!r.ok) throw new Error(r.statusText); return r.json(); })
   .then(config => init(config))
   .catch(err => {
-    console.error('Feed error:', err);
+    console.error(err);
     document.getElementById('loading').style.display = 'none';
     document.getElementById('error').style.display   = 'flex';
   });
  
 // ── Init ─────────────────────────────────────────────────────
 function init(config) {
-  videosConfig = config.videos;
-  totalSlides  = config.videos.length;
-  const feed   = document.getElementById('feed');
+  allVideos    = config.videos;
+  activeVideos = config.videos.filter(function(v) { return v.active !== false; });
+  videosConfig = activeVideos;
+  totalSlides  = activeVideos.length;
  
+  const feed = document.getElementById('feed');
   document.documentElement.style.setProperty('--accent', config.accentColor || '#5b5bd6');
   document.getElementById('channel-name').textContent = '⚡ ' + config.channelName;
  
   // Build progress dots
   const dotsEl = document.getElementById('dots');
-  config.videos.forEach((_, i) => {
+  activeVideos.forEach(function(_, i) {
     const dot = document.createElement('div');
     dot.className = 'dot' + (i === 0 ? ' active' : '');
     dot.id = 'dot-' + i;
     dotsEl.appendChild(dot);
   });
  
-  // Render slides
-  config.videos.forEach((v, i) => feed.appendChild(makeSlide(v, i)));
+  // Render active slides
+  activeVideos.forEach(function(v, i) { feed.appendChild(makeSlide(v, i)); });
  
   updateCounter(0);
   setupObserver();
   document.getElementById('loading').style.display = 'none';
  
-  // Restore saved UI — look up current index by wistiaId
-  config.videos.forEach(function(v, idx) {
+  // Restore saved button states
+  activeVideos.forEach(function(v, idx) {
     if (saved.indexOf(v.wistiaId) !== -1) {
-      const btn = document.querySelector(`[data-save="${idx}"]`);
+      const btn = document.querySelector('[data-save="' + idx + '"]');
       if (btn) btn.classList.add('saved');
     }
   });
   updateSavedBadge();
  
-  // Handle deep link (?v=N) — scroll to specific slide on load
+  // Handle ?v=WISTIA_ID deep link
   handleDeepLink();
 }
  
@@ -466,69 +457,44 @@ function makeSlide(video, index) {
   slide.dataset.index    = index;
   slide.dataset.wistiaId = video.wistiaId;
  
-  const tagsHtml = (video.tags || [])
-    .map(t => `<span class="tip-tag">${t}</span>`).join('');
+  const tagsHtml = (video.tags || []).map(function(t) {
+    return '<span class="tip-tag" onclick="openHashtag(\'' + t + '\')">' + t + '</span>';
+  }).join('');
  
-  slide.innerHTML = `
-    <div class="wistia-wrap">
-      <div class="wistia_embed wistia_async_${video.wistiaId} videoFoam=true"
-           style="height:100%;width:100%">&nbsp;</div>
-    </div>
+  slide.innerHTML =
+    '<div class="wistia-wrap">' +
+      '<div class="wistia_embed wistia_async_' + video.wistiaId + ' videoFoam=true" style="height:100%;width:100%">&nbsp;</div>' +
+    '</div>' +
+    '<div class="overlay">' +
+      (video.release ? '<div class="tip-release">' + video.release + '</div>' : '') +
+      '<div class="tip-title">'   + video.title   + '</div>' +
+      '<div class="tip-caption">' + video.caption + '</div>' +
+      '<div class="tip-tags">'    + tagsHtml       + '</div>' +
+    '</div>' +
+    '<div class="timeline">' +
+      '<div class="tl-times">' +
+        '<span class="tl-time tl-current">0:00</span>' +
+        '<span class="tl-time right tl-total">0:00</span>' +
+      '</div>' +
+      '<div class="tl-track"><div class="tl-rail"><div class="tl-fill"></div></div><div class="tl-thumb"></div></div>' +
+    '</div>' +
+    '<div class="actions">' +
+      '<button class="action-btn" data-save="' + index + '" onclick="toggleSave(' + index + ')" aria-label="Save">' +
+        '<div class="action-icon">🔖</div><div class="action-label">Save</div>' +
+      '</button>' +
+      '<button class="action-btn" data-share="' + index + '" onclick="shareClip(' + index + ')" aria-label="Share">' +
+        '<div class="action-icon">🔗</div><div class="action-label">Share</div>' +
+      '</button>' +
+    '</div>';
  
-    <div class="overlay">
-      ${video.release ? `<div class="tip-release">${video.release}</div>` : ''}
-      <div class="tip-title">${video.title}</div>
-      <div class="tip-caption">${video.caption}</div>
-      <div class="tip-tags">${tagsHtml}</div>
-    </div>
- 
-    <!-- ── Timeline scrubber ── -->
-    <div class="timeline">
-      <div class="tl-times">
-        <span class="tl-time tl-current">0:00</span>
-        <span class="tl-time right tl-total">0:00</span>
-      </div>
-      <div class="tl-track">
-        <div class="tl-rail">
-          <div class="tl-fill"></div>
-        </div>
-        <div class="tl-thumb"></div>
-      </div>
-    </div>
- 
-    <!-- ── Side actions ── -->
-    <div class="actions">
-      <button class="action-btn" data-save="${index}"
-              onclick="toggleSave(${index})" aria-label="Save this tip">
-        <div class="action-icon">🔖</div>
-        <div class="action-label">Save</div>
-      </button>
-      <button class="action-btn" data-share="${index}"
-              onclick="shareClip(${index})" aria-label="Share this tip">
-        <div class="action-icon">🔗</div>
-        <div class="action-label">Share</div>
-      </button>
-    </div>
-  `;
- 
-  // Register with Wistia API
   window._wq = window._wq || [];
   window._wq.push({
     id: video.wistiaId,
     onReady: function(wVideo) {
       wistiaHandles[video.wistiaId] = wVideo;
       initTimeline(slide, wVideo);
- 
-      // ── postMessage to Docebo on clip completion ──
-      // Lets the parent Docebo page know a clip was fully watched.
-      // See the "Docebo listener" snippet at the bottom of this file.
       wVideo.bind('end', function() {
-        window.parent.postMessage({
-          type:     'fat-clip-complete',
-          index:    index,
-          wistiaId: video.wistiaId,
-          title:    video.title,
-        }, '*');
+        window.parent.postMessage({ type: 'fat-clip-complete', wistiaId: video.wistiaId, title: video.title }, '*');
       });
     }
   });
@@ -536,94 +502,63 @@ function makeSlide(video, index) {
   return slide;
 }
  
-// ── Timeline: wire up scrubbing + progress updates ────────────
+// ── Timeline ──────────────────────────────────────────────────
 function initTimeline(slideEl, wVideo) {
-  const fillEl    = slideEl.querySelector('.tl-fill');
-  const thumbEl   = slideEl.querySelector('.tl-thumb');
-  const currEl    = slideEl.querySelector('.tl-current');
-  const totalEl   = slideEl.querySelector('.tl-total');
-  const trackEl   = slideEl.querySelector('.tl-track');
+  const fillEl  = slideEl.querySelector('.tl-fill');
+  const thumbEl = slideEl.querySelector('.tl-thumb');
+  const currEl  = slideEl.querySelector('.tl-current');
+  const totalEl = slideEl.querySelector('.tl-total');
+  const trackEl = slideEl.querySelector('.tl-track');
  
-  // Update bar as video plays
   wVideo.bind('timechange', function(t) {
     const dur = wVideo.duration();
     if (!dur) return;
     const pct = Math.min(100, (t / dur) * 100);
-    fillEl.style.width   = pct + '%';
-    thumbEl.style.left   = pct + '%';
-    currEl.textContent   = formatTime(t);
+    fillEl.style.width  = pct + '%';
+    thumbEl.style.left  = pct + '%';
+    currEl.textContent  = formatTime(t);
   });
+  wVideo.bind('play', function() { totalEl.textContent = formatTime(wVideo.duration()); });
  
-  // Set total duration once video starts
-  wVideo.bind('play', function() {
-    totalEl.textContent = formatTime(wVideo.duration());
-  });
+  trackEl.addEventListener('click', function(e) { seekTo(wVideo, e.clientX, trackEl); });
+  trackEl.addEventListener('touchstart', function(e) { e.preventDefault(); seekTo(wVideo, e.touches[0].clientX, trackEl); }, { passive: false });
+  trackEl.addEventListener('touchmove',  function(e) { e.preventDefault(); seekTo(wVideo, e.touches[0].clientX, trackEl); }, { passive: false });
  
-  // Seek on mouse click
-  trackEl.addEventListener('click', function(e) {
-    seekTo(wVideo, e.clientX, trackEl);
-  });
- 
-  // Seek on touch (drag along timeline)
-  trackEl.addEventListener('touchstart', function(e) {
-    e.preventDefault();
-    seekTo(wVideo, e.touches[0].clientX, trackEl);
-  }, { passive: false });
- 
-  trackEl.addEventListener('touchmove', function(e) {
-    e.preventDefault();
-    seekTo(wVideo, e.touches[0].clientX, trackEl);
-  }, { passive: false });
- 
-  // Mouse drag support
-  let dragging = false;
-  trackEl.addEventListener('mousedown', function(e) {
-    dragging = true;
-    seekTo(wVideo, e.clientX, trackEl);
-  });
-  document.addEventListener('mousemove', function(e) {
-    if (!dragging) return;
-    seekTo(wVideo, e.clientX, trackEl);
-  });
-  document.addEventListener('mouseup', function() { dragging = false; });
+  var dragging = false;
+  trackEl.addEventListener('mousedown', function(e) { dragging = true; seekTo(wVideo, e.clientX, trackEl); });
+  document.addEventListener('mousemove', function(e) { if (dragging) seekTo(wVideo, e.clientX, trackEl); });
+  document.addEventListener('mouseup',   function()  { dragging = false; });
 }
  
 function seekTo(wVideo, clientX, trackEl) {
-  const rect = trackEl.getBoundingClientRect();
-  const pct  = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+  var rect = trackEl.getBoundingClientRect();
+  var pct  = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
   wVideo.time(pct * wVideo.duration());
 }
  
 function formatTime(secs) {
   if (!secs || isNaN(secs)) return '0:00';
-  const m = Math.floor(secs / 60);
-  const s = Math.floor(secs % 60);
+  var m = Math.floor(secs / 60), s = Math.floor(secs % 60);
   return m + ':' + (s < 10 ? '0' : '') + s;
 }
  
-// ── Intersection Observer: play visible, pause others ─────────
+// ── Intersection Observer ─────────────────────────────────────
 function setupObserver() {
-  const observer = new IntersectionObserver(entries => {
-    entries.forEach(entry => {
-      const wId    = entry.target.dataset.wistiaId;
-      const handle = wistiaHandles[wId];
-      const index  = parseInt(entry.target.dataset.index, 10);
-      if (entry.isIntersecting) {
-        handle && handle.play();
-        updateUI(index);
-      } else {
-        handle && handle.pause();
-      }
+  var observer = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      var wId    = entry.target.dataset.wistiaId;
+      var handle = wistiaHandles[wId];
+      var index  = parseInt(entry.target.dataset.index, 10);
+      if (entry.isIntersecting) { handle && handle.play(); updateUI(index); }
+      else                      { handle && handle.pause(); }
     });
   }, { threshold: 0.65 });
- 
-  document.querySelectorAll('.slide').forEach(s => observer.observe(s));
+  document.querySelectorAll('.slide').forEach(function(s) { observer.observe(s); });
 }
  
 function updateUI(newIndex) {
-  if (newIndex === currentIndex && document.getElementById('dot-0')) return;
-  const prevDot = document.getElementById('dot-' + currentIndex);
-  const newDot  = document.getElementById('dot-' + newIndex);
+  var prevDot = document.getElementById('dot-' + currentIndex);
+  var newDot  = document.getElementById('dot-' + newIndex);
   if (prevDot) prevDot.classList.remove('active');
   if (newDot)  newDot.classList.add('active');
   currentIndex = newIndex;
@@ -634,54 +569,98 @@ function updateCounter(index) {
   document.getElementById('counter').textContent = (index + 1) + ' / ' + totalSlides;
 }
  
-// ── Deep link: read ?v=N and scroll to that slide ─────────────
+// ── Deep link: ?v=WISTIA_ID ───────────────────────────────────
+// Links use the wistiaId, never an index position.
+// This means they stay valid forever across releases.
 function handleDeepLink() {
-  const params = new URLSearchParams(window.location.search);
-  const v = parseInt(params.get('v'), 10);
-  if (isNaN(v) || v < 0 || v >= totalSlides) return;
+  var params = new URLSearchParams(window.location.search);
+  var wId    = params.get('v');
+  if (!wId) return;
  
-  // Short delay lets the feed finish rendering before we scroll
-  setTimeout(function() {
-    const feedEl = document.getElementById('feed');
-    feedEl.scrollTo({ top: v * feedEl.clientHeight, behavior: 'instant' });
-  }, 150);
+  // Look in ALL videos (including inactive)
+  var video = allVideos.find(function(v) { return v.wistiaId === wId; });
+  if (!video) return;
+ 
+  if (video.active === false) {
+    // Archived — show full-screen overlay, not the main feed
+    showArchive(video);
+  } else {
+    // Still active — scroll to it in the feed
+    var idx = activeVideos.findIndex(function(v) { return v.wistiaId === wId; });
+    if (idx <= 0) return; // already at top, no jump needed
+    scrollBeforeJump = 0;
+    setTimeout(function() {
+      var feedEl = document.getElementById('feed');
+      feedEl.scrollTo({ top: idx * feedEl.clientHeight, behavior: 'instant' });
+      showBackPill();
+    }, 150);
+  }
 }
  
-// ── Share: copy deep-link URL for the current clip ────────────
+// ── Share: build ?v=WISTIA_ID URL ────────────────────────────
 function shareClip(index) {
-  const video = videosConfig[index];
-  const url   = new URL(window.location.href);
-  url.searchParams.set('v', index);
-  const shareUrl = url.toString();
+  var video = activeVideos[index];
+  var url   = new URL(window.location.href);
+  url.searchParams.set('v', video.wistiaId);  // permanent ID, not index
+  var shareUrl = url.toString();
  
-  const btn = document.querySelector(`[data-share="${index}"]`);
-  if (btn) btn.classList.add('sharing');
-  setTimeout(function() { if (btn) btn.classList.remove('sharing'); }, 1000);
+  var btn = document.querySelector('[data-share="' + index + '"]');
+  if (btn) { btn.classList.add('sharing'); setTimeout(function() { btn.classList.remove('sharing'); }, 1000); }
  
-  // Native share sheet on mobile
   if (navigator.share) {
-    navigator.share({ title: video.title, url: shareUrl })
-      .catch(function() {}); // user dismissed — that's fine
+    navigator.share({ title: video.title, url: shareUrl }).catch(function() {});
     return;
   }
- 
-  // Fallback: copy to clipboard
   navigator.clipboard.writeText(shareUrl)
     .then(function()  { showToast('🔗 Link copied!'); })
-    .catch(function() { showToast('Copy this link: ' + shareUrl); });
+    .catch(function() { showToast('Copy: ' + shareUrl); });
 }
  
-// ── Save: toggle save state, sync to localStorage + Docebo ───
-// Saves are keyed by wistiaId — NOT by array index.
-// This means saves survive across releases when new videos are
-// added, reordered, or old ones removed from videos.json.
+// ── Archive overlay ───────────────────────────────────────────
+// Shown when an inactive video is accessed via share link.
+function showArchive(video) {
+  var wrap = document.getElementById('archive-video-wrap');
+  wrap.innerHTML =
+    '<div class="wistia_embed wistia_async_' + video.wistiaId + ' videoFoam=true" ' +
+    'style="position:absolute;inset:0;width:100%;height:100%">&nbsp;</div>';
+ 
+  document.getElementById('archive-title').textContent   = video.title;
+  document.getElementById('archive-caption').textContent = video.caption || '';
+  document.getElementById('archive-badge').textContent   = '📦 ' + (video.release || 'Archived');
+ 
+  document.getElementById('archive-overlay').classList.add('open');
+}
+ 
+function closeArchive() {
+  document.getElementById('archive-overlay').classList.remove('open');
+  // Clear the embed so it stops playing
+  document.getElementById('archive-video-wrap').innerHTML = '';
+}
+ 
+// ── Back-to-feed pill ─────────────────────────────────────────
+// Appears briefly after any jump (from saved drawer or share link).
+// Tapping it returns to the top of the feed.
+function showBackPill() {
+  var pill = document.getElementById('back-pill');
+  pill.classList.add('show');
+  clearTimeout(backPillTimer);
+  backPillTimer = setTimeout(function() { pill.classList.remove('show'); }, 4000);
+}
+ 
+function goBackToFeed() {
+  var feedEl = document.getElementById('feed');
+  feedEl.scrollTo({ top: 0, behavior: 'smooth' });
+  document.getElementById('back-pill').classList.remove('show');
+}
+ 
+// ── Save ──────────────────────────────────────────────────────
 function toggleSave(index) {
-  const video = videosConfig[index];
+  var video = activeVideos[index];
   if (!video) return;
-  const wId = video.wistiaId;
-  const btn = document.querySelector(`[data-save="${index}"]`);
-  const pos = saved.indexOf(wId);
-  let action;
+  var wId = video.wistiaId;
+  var btn = document.querySelector('[data-save="' + index + '"]');
+  var pos = saved.indexOf(wId);
+  var action;
  
   if (pos === -1) {
     saved.push(wId);
@@ -695,66 +674,66 @@ function toggleSave(index) {
     showToast('Removed from saved');
   }
  
-  // Persist wistiaIds to localStorage
   try { localStorage.setItem('fat-saved', JSON.stringify(saved)); } catch (_) {}
- 
   updateSavedBadge();
  
-  // ── postMessage to Docebo parent ──────────────────────────
   window.parent.postMessage({
     type:        'fat-save-update',
     action:      action,
     wistiaId:    wId,
     title:       video.title,
     release:     video.release || '',
-    savedAll:    saved.slice(),   // full array of saved wistiaIds
+    savedAll:    saved.slice(),
     savedTitles: saved.map(function(id) {
-      const v = videosConfig.find(function(x) { return x.wistiaId === id; });
+      var v = allVideos.find(function(x) { return x.wistiaId === id; });
       return v ? v.title : '';
     }),
   }, '*');
 }
  
-// ── Saved badge in header ─────────────────────────────────────
 function updateSavedBadge() {
-  const badge = document.getElementById('saved-badge');
-  if (saved.length > 0) {
-    badge.style.display = 'inline-block';
-    badge.textContent   = saved.length + ' saved';
-  } else {
-    badge.style.display = 'none';
-  }
+  var badge = document.getElementById('saved-badge');
+  if (saved.length > 0) { badge.style.display = 'inline-block'; badge.textContent = saved.length + ' saved'; }
+  else                   { badge.style.display = 'none'; }
 }
  
-// ── Saved drawer ─────────────────────────────────────────────
+// ── Saved drawer ──────────────────────────────────────────────
 function openSavedDrawer() {
-  const list = document.getElementById('saved-list');
+  var list = document.getElementById('saved-list');
   list.innerHTML = '';
  
   if (saved.length === 0) {
     list.innerHTML = '<div id="saved-empty">No saved tips yet. Tap 🔖 on any clip.</div>';
   } else {
-    // Look up each saved wistiaId against current videosConfig.
-    // If a saved video was removed from a future release, it's
-    // gracefully skipped rather than showing a broken entry.
     saved.forEach(function(wId) {
-      const idx = videosConfig.findIndex(function(v) { return v.wistiaId === wId; });
-      if (idx === -1) return; // video no longer in the feed — skip silently
-      const v = videosConfig[idx];
-      const item = document.createElement('div');
+      // Look up in allVideos so archived saves still appear
+      var video    = allVideos.find(function(v) { return v.wistiaId === wId; });
+      if (!video) return;
+      var isActive = video.active !== false;
+      var idx      = isActive ? activeVideos.findIndex(function(v) { return v.wistiaId === wId; }) : -1;
+ 
+      var item = document.createElement('div');
       item.className = 'saved-item';
-      item.innerHTML = `
-        <div class="saved-item-num">${idx + 1}</div>
-        <div class="saved-item-title">
-          ${v.release ? `<span style="font-size:9px;color:#666;display:block;margin-bottom:2px;">${v.release}</span>` : ''}
-          ${v.title}
-        </div>
-        <div class="saved-item-go">Watch →</div>
-      `;
+      item.innerHTML =
+        '<div class="saved-item-num' + (isActive ? '' : ' archived') + '">' + (isActive ? idx + 1 : '📦') + '</div>' +
+        '<div class="saved-item-title">' +
+          (video.release ? '<span style="font-size:9px;color:#555;display:block;margin-bottom:2px;">' + video.release + (isActive ? '' : ' · archived') + '</span>' : '') +
+          video.title +
+        '</div>' +
+        '<div class="saved-item-go' + (isActive ? '' : ' archived') + '">' + (isActive ? 'Watch →' : 'View →') + '</div>';
+ 
       item.onclick = function() {
         closeSavedDrawer();
-        const feedEl = document.getElementById('feed');
-        feedEl.scrollTo({ top: idx * feedEl.clientHeight, behavior: 'smooth' });
+        if (isActive) {
+          // Jump to video in the main feed + show back pill
+          scrollBeforeJump = currentIndex;
+          var feedEl = document.getElementById('feed');
+          feedEl.scrollTo({ top: idx * feedEl.clientHeight, behavior: 'smooth' });
+          setTimeout(showBackPill, 400);
+        } else {
+          // Archived — show the overlay
+          showArchive(video);
+        }
       };
       list.appendChild(item);
     });
@@ -767,49 +746,106 @@ function closeSavedDrawer() {
   document.getElementById('saved-drawer').classList.remove('open');
 }
  
-// ── Toast notification ────────────────────────────────────────
-let toastTimer;
+// ── Hashtag browse ────────────────────────────────────────────
+// Opens an Instagram-style grid of all videos tagged with `tag`.
+// Searches allVideos so archived videos also appear in results.
+var hashtagCloseTimer = null;
+ 
+function openHashtag(tag) {
+  // Pause the current feed video while browsing
+  var currentWId = activeVideos[currentIndex] && activeVideos[currentIndex].wistiaId;
+  if (currentWId && wistiaHandles[currentWId]) wistiaHandles[currentWId].pause();
+ 
+  // Filter ALL videos (active + inactive) by this tag
+  var matches = allVideos.filter(function(v) {
+    return (v.tags || []).some(function(t) {
+      return t.toLowerCase() === tag.toLowerCase();
+    });
+  });
+ 
+  // Populate header
+  document.getElementById('hashtag-name').textContent  = tag;
+  document.getElementById('hashtag-count').textContent =
+    matches.length + ' tip' + (matches.length !== 1 ? 's' : '');
+ 
+  // Build grid
+  var grid = document.getElementById('hashtag-grid');
+  grid.innerHTML = '';
+ 
+  if (matches.length === 0) {
+    grid.innerHTML = '<div id="hashtag-empty">No tips found for #' + tag + '</div>';
+  } else {
+    matches.forEach(function(video, i) {
+      var isActive = video.active !== false;
+      var card = document.createElement('div');
+      card.className = 'hg-card';
+ 
+      // Thumbnail: use video.thumbnail URL if provided, else gradient placeholder
+      var thumbStyle = video.thumbnail
+        ? 'background-image:url(' + video.thumbnail + ');'
+        : '';
+      var gradClass = 'hg-grad-' + (i % 6);
+      var initial   = (video.title || '?').charAt(0).toUpperCase();
+ 
+      card.innerHTML =
+        '<div class="hg-thumb ' + (video.thumbnail ? '' : gradClass) + '" style="' + thumbStyle + '">' +
+          (!video.thumbnail ? '<div class="hg-initial">' + initial + '</div>' : '') +
+        '</div>' +
+        (!isActive ? '<div class="hg-archived-badge">archived</div>' : '') +
+        '<div class="hg-info">' +
+          '<div class="hg-title">' + video.title + '</div>' +
+          (video.release ? '<div class="hg-release">' + video.release + '</div>' : '') +
+        '</div>';
+ 
+      card.onclick = function() {
+        closeHashtag();
+        if (isActive) {
+          // Jump to video in the feed
+          var idx = activeVideos.findIndex(function(v) { return v.wistiaId === video.wistiaId; });
+          scrollBeforeJump = currentIndex;
+          setTimeout(function() {
+            document.getElementById('feed').scrollTo({ top: idx * document.getElementById('feed').clientHeight, behavior: 'smooth' });
+            showBackPill();
+          }, 320); // after overlay closes
+        } else {
+          // Archived — show archive overlay
+          setTimeout(function() { showArchive(video); }, 320);
+        }
+      };
+ 
+      grid.appendChild(card);
+    });
+  }
+ 
+  // Slide up
+  var overlay = document.getElementById('hashtag-overlay');
+  overlay.classList.add('open');
+  requestAnimationFrame(function() {
+    requestAnimationFrame(function() { overlay.classList.add('animate'); });
+  });
+}
+ 
+function closeHashtag() {
+  var overlay = document.getElementById('hashtag-overlay');
+  overlay.classList.remove('animate');
+  clearTimeout(hashtagCloseTimer);
+  hashtagCloseTimer = setTimeout(function() {
+    overlay.classList.remove('open');
+    // Resume video that was playing
+    var currentWId = activeVideos[currentIndex] && activeVideos[currentIndex].wistiaId;
+    if (currentWId && wistiaHandles[currentWId]) wistiaHandles[currentWId].play();
+  }, 320);
+}
+ 
+// ── Toast ─────────────────────────────────────────────────────
+var toastTimer;
 function showToast(msg) {
-  const el = document.getElementById('toast');
+  var el = document.getElementById('toast');
   el.textContent = msg;
   el.classList.add('show');
   clearTimeout(toastTimer);
   toastTimer = setTimeout(function() { el.classList.remove('show'); }, 2200);
 }
- 
-// ─────────────────────────────────────────────────────────────
-//  DOCEBO PARENT PAGE LISTENER
-//  ─────────────────────────────────────────────────────────────
-//  Add the snippet below to the Docebo Custom HTML widget that
-//  WRAPS the iframe (the one on the Docebo homepage).
-//  It catches postMessage events from this feed and can:
-//    • display saved clips in a Docebo widget
-//    • call the Docebo REST API to bookmark content
-//    • log completion events
-//
-//  SNIPPET TO PASTE INTO THE DOCEBO WRAPPER WIDGET:
-//
-//  <script>
-//    window.addEventListener('message', function(e) {
-//      // Safety: only accept messages from your GitHub Pages domain
-//      // if (e.origin !== 'https://YOUR-USERNAME.github.io') return;
-//
-//      if (e.data.type === 'fat-save-update') {
-//        console.log('Save action:', e.data.action, e.data.title);
-//        // e.data.savedTitles = array of all currently saved clip titles
-//        // To call Docebo API here, you need the user's auth token.
-//        // The simplest approach: store in a Docebo "User Extra Field"
-//        // via PATCH /api/learn/v1/users/{userId}/extrafields
-//      }
-//
-//      if (e.data.type === 'fat-clip-complete') {
-//        console.log('Clip completed:', e.data.title);
-//        // Optionally fire a Docebo xAPI statement here
-//      }
-//    });
-//  </script>
-//
-// ─────────────────────────────────────────────────────────────
 </script>
 </body>
 </html>
