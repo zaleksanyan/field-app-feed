@@ -5,31 +5,49 @@
   "videos": [
     {
       "wistiaId": "REPLACE_WITH_WISTIA_HASH_1",
+      "active": true,
       "release": "May 2026",
       "title": "AI writes your work summary for you",
       "caption": "Tap Generate and Titan Intelligence builds a clear summary from your work logs in seconds — no typing.",
-      "tags": ["TitanIntelligence", "WorkSummary"]
+      "tags": [
+        "TitanIntelligence",
+        "WorkSummary"
+      ],
+      "thumbnail": ""
     },
     {
       "wistiaId": "REPLACE_WITH_WISTIA_HASH_2",
+      "active": true,
       "release": "May 2026",
       "title": "Let the customer sign from their own phone",
       "caption": "Tap Share → Email or Text → they get a link and sign on their own screen. No handing over your device.",
-      "tags": ["eSignature", "Estimates", "Contactless"]
+      "tags": [
+        "eSignature",
+        "Estimates",
+        "Contactless"
+      ]
     },
     {
       "wistiaId": "REPLACE_WITH_WISTIA_HASH_3",
+      "active": true,
       "release": "May 2026",
       "title": "Collect a deposit before you leave the job",
       "caption": "After Perform Work Later, tap Collect Deposit. Pick a % or custom amount — it auto-carries to the follow-up invoice.",
-      "tags": ["Deposits", "Payments"]
+      "tags": [
+        "Deposits",
+        "Payments"
+      ]
     },
     {
       "wistiaId": "REPLACE_WITH_WISTIA_HASH_4",
+      "active": true,
       "release": "May 2026",
       "title": "Pro vs. Rookie: closing out an invoice",
       "caption": "AI invoice summary + Present = branded paperwork in the customer's inbox before you reach your truck.",
-      "tags": ["Invoice", "ProTip"]
+      "tags": [
+        "Invoice",
+        "ProTip"
+      ]
     }
   ]
 }
