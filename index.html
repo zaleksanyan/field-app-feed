@@ -91,12 +91,18 @@
     }
     #channel-name { font-size: 14px; font-weight: 800; color: #fff; }
     #counter      { font-size: 12px; color: rgba(255,255,255,0.5); font-weight: 600; }
-    #saved-badge  {
-      display: none; pointer-events: all; cursor: pointer;
-      background: var(--accent, #5b5bd6); color: #fff;
-      font-size: 10px; font-weight: 800;
-      padding: 3px 8px; border-radius: 10px; margin-left: 10px;
+    #saved-btn {
+      pointer-events: all; cursor: pointer;
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.18);
+      color: rgba(255,255,255,0.85);
+      font-size: 11px; font-weight: 700;
+      padding: 5px 12px; border-radius: 20px; margin-left: 10px;
+      backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+      transition: background 0.15s;
+      white-space: nowrap;
     }
+    #saved-btn:hover { background: rgba(255,255,255,0.22); }
  
     /* ── Progress dots ──────────────────────────────────────── */
     #dots { position: fixed; right: 6px; top: 50%; transform: translateY(-50%); z-index: 100; display: flex; flex-direction: column; align-items: center; gap: 5px; pointer-events: none; }
@@ -322,7 +328,7 @@
   <div id="header">
     <div style="display:flex;align-items:center;">
       <div id="channel-name">⚡ Field App Tips</div>
-      <div id="saved-badge" onclick="openSavedDrawer()">0 saved</div>
+      <button id="saved-btn" onclick="openSavedDrawer()">🔖 Saved</button>
     </div>
     <div id="counter"></div>
   </div>
@@ -398,7 +404,23 @@ let saved = [];          // array of wistiaIds
 let backPillTimer = null;
 let scrollBeforeJump = null;   // index we were on before a jump
  
-try { saved = JSON.parse(localStorage.getItem('fat-saved') || '[]'); } catch (_) {}
+// ── userId + storage key ──────────────────────────────────────
+// Pass ?userId={user_id} from Docebo so saves are per-user on shared devices.
+// Docebo iframe example:
+//   <iframe src="https://YOUR-USERNAME.github.io/field-app-feed/?userId={user_id}"
+//           width="100%" height="600" frameborder="0" allowfullscreen></iframe>
+var _urlParams  = new URLSearchParams(window.location.search);
+var _userId     = _urlParams.get('userId') || '';
+var storageKey  = _userId ? 'fat-saved-' + _userId : 'fat-saved';
+ 
+// Load saves — and clear any old data that stored indices (numbers) instead of wistiaIds
+try {
+  saved = JSON.parse(localStorage.getItem(storageKey) || '[]');
+  if (saved.some(function(s) { return typeof s === 'number'; })) {
+    saved = [];
+    localStorage.removeItem(storageKey);
+  }
+} catch (_) { saved = []; }
  
 // ── Boot ─────────────────────────────────────────────────────
 fetch('./videos.json')
@@ -674,7 +696,7 @@ function toggleSave(index) {
     showToast('Removed from saved');
   }
  
-  try { localStorage.setItem('fat-saved', JSON.stringify(saved)); } catch (_) {}
+  try { localStorage.setItem(storageKey, JSON.stringify(saved)); } catch (_) {}
   updateSavedBadge();
  
   window.parent.postMessage({
@@ -692,9 +714,18 @@ function toggleSave(index) {
 }
  
 function updateSavedBadge() {
-  var badge = document.getElementById('saved-badge');
-  if (saved.length > 0) { badge.style.display = 'inline-block'; badge.textContent = saved.length + ' saved'; }
-  else                   { badge.style.display = 'none'; }
+  // Button is always visible — highlight it when saves exist
+  var btn = document.getElementById('saved-btn');
+  if (!btn) return;
+  if (saved.length > 0) {
+    btn.style.background = 'rgba(91,91,214,0.55)';
+    btn.style.borderColor = 'rgba(91,91,214,0.7)';
+    btn.style.color = '#fff';
+  } else {
+    btn.style.background = '';
+    btn.style.borderColor = '';
+    btn.style.color = '';
+  }
 }
  
 // ── Saved drawer ──────────────────────────────────────────────
@@ -849,3 +880,4 @@ function showToast(msg) {
 </script>
 </body>
 </html>
+ 
