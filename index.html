@@ -5,17 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
   <title>Field App Tips</title>
   <script src="https://fast.wistia.com/assets/external/E-v1.js" async></script>
- 
+
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
- 
+
     html, body {
       width: 100%; height: 100%;
       background: #000; overflow: hidden;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
       -webkit-font-smoothing: antialiased;
     }
- 
+
     /* ── Feed ───────────────────────────────────────────────── */
     #feed {
       width: 100%; height: 100%;
@@ -25,7 +25,7 @@
       scrollbar-width: none;
     }
     #feed::-webkit-scrollbar { display: none; }
- 
+
     /* ── Slide ──────────────────────────────────────────────── */
     .slide {
       position: relative; width: 100%;
@@ -33,11 +33,11 @@
       scroll-snap-align: start; scroll-snap-stop: always;
       background: #080810; overflow: hidden;
     }
- 
+
     /* ── Wistia video ───────────────────────────────────────── */
     .wistia-wrap { position: absolute; inset: 0; }
     .wistia_embed { width: 100% !important; height: 100% !important; }
- 
+
     /* ── Text overlay ───────────────────────────────────────── */
     .overlay {
       position: absolute; bottom: 0; left: 0; right: 68px;
@@ -54,7 +54,7 @@
     .tip-tag     { font-size: 11px; color: var(--accent, #5b5bd6); font-weight: 600; cursor: pointer; padding: 2px 0; -webkit-tap-highlight-color: transparent; }
     .tip-tag::before { content: '#'; }
     .tip-tag:hover { text-decoration: underline; }
- 
+
     /* ── Timeline ───────────────────────────────────────────── */
     .timeline {
       position: absolute; bottom: 0; left: 0; right: 0;
@@ -71,7 +71,7 @@
     .tl-rail  { position: absolute; left: 0; right: 0; height: 3px; background: rgba(255,255,255,0.2); border-radius: 2px; overflow: hidden; }
     .tl-fill  { height: 100%; width: 0%; background: var(--accent, #5b5bd6); border-radius: 2px; transition: width 0.1s linear; pointer-events: none; }
     .tl-thumb { position: absolute; left: 0%; top: 50%; transform: translate(-50%,-50%); width: 12px; height: 12px; border-radius: 50%; background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,0.5); transition: left 0.1s linear; pointer-events: none; }
- 
+
     /* ── Side action buttons ────────────────────────────────── */
     .actions { position: absolute; right: 12px; bottom: 80px; display: flex; flex-direction: column; align-items: center; gap: 20px; }
     .action-btn { display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; background: none; border: none; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -80,7 +80,7 @@
     .action-btn.saved .action-icon   { background: rgba(91,91,214,0.55); }
     .action-btn.sharing .action-icon { background: rgba(255,255,255,0.3); }
     .action-label { font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.7); }
- 
+
     /* ── Fixed header ───────────────────────────────────────── */
     #header {
       position: fixed; top: 0; left: 0; right: 0; z-index: 100;
@@ -103,16 +103,16 @@
       white-space: nowrap;
     }
     #saved-btn:hover { background: rgba(255,255,255,0.22); }
- 
+
     /* ── Progress dots ──────────────────────────────────────── */
     #dots { position: fixed; right: 6px; top: 50%; transform: translateY(-50%); z-index: 100; display: flex; flex-direction: column; align-items: center; gap: 5px; pointer-events: none; }
     .dot { width: 3px; height: 14px; border-radius: 2px; background: rgba(255,255,255,0.2); transition: height 0.2s, background 0.2s; }
     .dot.active { height: 24px; background: #fff; }
- 
+
     /* ── Scroll hint ────────────────────────────────────────── */
     #scroll-hint { position: fixed; bottom: 12px; left: 50%; transform: translateX(-50%); z-index: 100; font-size: 11px; color: rgba(255,255,255,0.35); pointer-events: none; animation: fadeHint 1s ease 3s forwards; white-space: nowrap; }
     @keyframes fadeHint { to { opacity: 0; } }
- 
+
     /* ── Toast ──────────────────────────────────────────────── */
     #toast {
       position: fixed; bottom: 80px; left: 50%;
@@ -126,7 +126,7 @@
       white-space: nowrap; backdrop-filter: blur(10px);
     }
     #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
- 
+
     /* ── "Back to feed" floating pill ───────────────────────── */
     /* Appears after jumping to a video from saved drawer or share link */
     #back-pill {
@@ -145,26 +145,52 @@
       opacity: 1; pointer-events: all;
       transform: translateX(-50%) translateY(0);
     }
- 
-    /* ── Saved clips drawer ─────────────────────────────────── */
-    #saved-drawer { position: fixed; inset: 0; z-index: 200; display: none; }
-    #saved-drawer.open { display: block; }
-    #saved-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); }
-    #saved-panel { position: absolute; bottom: 0; left: 0; right: 0; background: #13131a; border-top: 1px solid #2a2a35; border-radius: 16px 16px 0 0; padding: 16px 0 32px; max-height: 65vh; display: flex; flex-direction: column; }
-    #saved-panel-header { display: flex; align-items: center; justify-content: space-between; padding: 0 18px 14px; border-bottom: 1px solid #1e1e28; }
-    #saved-panel-title  { font-size: 14px; font-weight: 800; color: #e0e0e0; }
-    #saved-panel-close  { width: 28px; height: 28px; border-radius: 50%; background: #2a2a35; border: none; color: #888; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-    #saved-list { overflow-y: auto; flex: 1; padding: 10px 0; scrollbar-width: none; }
-    #saved-list::-webkit-scrollbar { display: none; }
-    .saved-item { display: flex; align-items: center; gap: 12px; padding: 10px 18px; cursor: pointer; transition: background 0.1s; }
-    .saved-item:hover { background: #1a1a22; }
-    .saved-item-num   { width: 28px; height: 28px; border-radius: 6px; background: var(--accent, #5b5bd6); color: #fff; font-size: 10px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-    .saved-item-num.archived { background: #3a3a3a; }
-    .saved-item-title { font-size: 13px; color: #e0e0e0; flex: 1; line-height: 1.3; }
-    .saved-item-go    { font-size: 11px; color: #5b5bd6; flex-shrink: 0; }
-    .saved-item-go.archived { color: #555; }
-    #saved-empty      { padding: 32px 18px; text-align: center; font-size: 13px; color: #555; }
- 
+
+    /* ── Saved gallery overlay ───────────────────────────────── */
+    #saved-overlay {
+      position: fixed; inset: 0; z-index: 200;
+      background: #0a0a0f;
+      display: none; flex-direction: column;
+      transform: translateY(100%);
+      transition: transform 0.32s cubic-bezier(0.32, 0.72, 0, 1);
+    }
+    #saved-overlay.open    { display: flex; }
+    #saved-overlay.animate { transform: translateY(0); }
+
+    #saved-header {
+      flex-shrink: 0;
+      padding: 16px 18px 0;
+      border-bottom: 1px solid #1e1e28;
+    }
+    #saved-back {
+      background: none; border: none; color: rgba(255,255,255,0.6);
+      font-size: 13px; font-weight: 600; cursor: pointer; padding: 0 0 12px;
+      display: flex; align-items: center; gap: 6px;
+    }
+    #saved-back:hover { color: #fff; }
+    #saved-gallery-title {
+      font-size: 22px; font-weight: 800; color: #fff;
+      margin-bottom: 4px;
+    }
+    #saved-count { font-size: 13px; color: #555; margin-bottom: 14px; }
+
+    #saved-grid {
+      flex: 1; overflow-y: auto;
+      padding: 12px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 3px;
+      align-content: start;
+      scrollbar-width: none;
+    }
+    #saved-grid::-webkit-scrollbar { display: none; }
+
+    #saved-empty-gallery {
+      grid-column: 1 / -1;
+      padding: 48px 18px; text-align: center;
+      font-size: 13px; color: #444; line-height: 1.7;
+    }
+
     /* ── Archive overlay ────────────────────────────────────── */
     /* Shown when accessing an inactive video via share link     */
     #archive-overlay {
@@ -173,7 +199,7 @@
       display: none; flex-direction: column;
     }
     #archive-overlay.open { display: flex; }
- 
+
     #archive-bar {
       position: absolute; top: 0; left: 0; right: 0; z-index: 10;
       padding: 16px 18px;
@@ -189,16 +215,16 @@
       transition: background 0.15s;
     }
     #archive-back:hover { background: rgba(255,255,255,0.25); }
- 
+
     #archive-badge {
       font-size: 10px; font-weight: 700; letter-spacing: 0.1em;
       text-transform: uppercase; color: rgba(255,255,255,0.45);
       background: rgba(0,0,0,0.4); padding: 4px 10px; border-radius: 10px;
     }
- 
+
     #archive-video-wrap { flex: 1; position: relative; }
     #archive-video-wrap .wistia_embed { position: absolute; inset: 0; }
- 
+
     #archive-info {
       position: absolute; bottom: 0; left: 0; right: 0; z-index: 10;
       padding: 60px 18px 20px;
@@ -207,7 +233,7 @@
     }
     #archive-title   { font-size: 16px; font-weight: 700; color: #fff; line-height: 1.3; margin-bottom: 6px; }
     #archive-caption { font-size: 13px; color: rgba(255,255,255,0.75); line-height: 1.5; }
- 
+
     /* ── Hashtag overlay ────────────────────────────────────── */
     #hashtag-overlay {
       position: fixed; inset: 0; z-index: 160;
@@ -218,7 +244,7 @@
     }
     #hashtag-overlay.open { display: flex; }
     #hashtag-overlay.animate { transform: translateY(0); }
- 
+
     #hashtag-header {
       flex-shrink: 0;
       padding: 16px 18px 0;
@@ -236,7 +262,7 @@
     }
     #hashtag-name::before { content: '#'; color: var(--accent, #5b5bd6); }
     #hashtag-count { font-size: 13px; color: #555; margin-bottom: 14px; }
- 
+
     #hashtag-grid {
       flex: 1; overflow-y: auto;
       padding: 12px;
@@ -247,7 +273,7 @@
       scrollbar-width: none;
     }
     #hashtag-grid::-webkit-scrollbar { display: none; }
- 
+
     .hg-card {
       position: relative;
       aspect-ratio: 9/14;
@@ -257,13 +283,13 @@
       background: #13131a;
     }
     .hg-card:hover { opacity: 0.85; }
- 
+
     /* Thumbnail — uses Wistia URL if provided, else gradient */
     .hg-thumb {
       position: absolute; inset: 0;
       background-size: cover; background-position: center;
     }
- 
+
     /* Gradient palettes for cards without thumbnails */
     .hg-grad-0 { background: linear-gradient(160deg, #1a2040, #0d1020); }
     .hg-grad-1 { background: linear-gradient(160deg, #1a2a1a, #0d1a0d); }
@@ -271,7 +297,7 @@
     .hg-grad-3 { background: linear-gradient(160deg, #1a1a2a, #0d0d1a); }
     .hg-grad-4 { background: linear-gradient(160deg, #2a1a2a, #1a0d1a); }
     .hg-grad-5 { background: linear-gradient(160deg, #1a2a2a, #0d1a1a); }
- 
+
     /* Initial letter shown when no thumbnail */
     .hg-initial {
       position: absolute; top: 50%; left: 50%;
@@ -279,7 +305,7 @@
       font-size: 28px; font-weight: 900;
       color: rgba(255,255,255,0.15);
     }
- 
+
     /* Bottom info bar */
     .hg-info {
       position: absolute; bottom: 0; left: 0; right: 0;
@@ -296,7 +322,7 @@
       font-size: 9px; color: rgba(255,255,255,0.4);
       margin-top: 3px; font-weight: 600;
     }
- 
+
     /* Archived badge on card */
     .hg-archived-badge {
       position: absolute; top: 6px; left: 6px;
@@ -304,14 +330,14 @@
       font-size: 8px; font-weight: 700; letter-spacing: 0.06em;
       padding: 2px 5px; border-radius: 3px; text-transform: uppercase;
     }
- 
+
     /* Empty state */
     #hashtag-empty {
       grid-column: 1 / -1;
       padding: 48px 18px; text-align: center;
       font-size: 13px; color: #444;
     }
- 
+
     /* ── Loading / Error ────────────────────────────────────── */
     #loading { position: fixed; inset: 0; z-index: 200; background: #080810; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; }
     .spinner { width: 32px; height: 32px; border: 3px solid rgba(255,255,255,0.1); border-top-color: var(--accent, #5b5bd6); border-radius: 50%; animation: spin 0.8s linear infinite; }
@@ -323,7 +349,7 @@
   </style>
 </head>
 <body>
- 
+
   <!-- Fixed header -->
   <div id="header">
     <div style="display:flex;align-items:center;">
@@ -334,25 +360,23 @@
   </div>
   <div id="dots"></div>
   <div id="scroll-hint">↕ &nbsp;swipe for next tip</div>
- 
+
   <!-- Back to feed pill (shown after jumping from saved/share) -->
   <div id="back-pill" onclick="goBackToFeed()">↑ Back to feed</div>
- 
+
   <!-- Toast -->
   <div id="toast"></div>
- 
-  <!-- Saved drawer -->
-  <div id="saved-drawer">
-    <div id="saved-backdrop" onclick="closeSavedDrawer()"></div>
-    <div id="saved-panel">
-      <div id="saved-panel-header">
-        <div id="saved-panel-title">🔖 Saved Tips</div>
-        <button id="saved-panel-close" onclick="closeSavedDrawer()">✕</button>
-      </div>
-      <div id="saved-list"></div>
+
+  <!-- Saved gallery overlay -->
+  <div id="saved-overlay">
+    <div id="saved-header">
+      <button id="saved-back" onclick="closeSavedGallery()">← Back to feed</button>
+      <div id="saved-gallery-title">🔖 Saved Tips</div>
+      <div id="saved-count">0 saved</div>
     </div>
+    <div id="saved-grid"></div>
   </div>
- 
+
   <!-- Hashtag browse overlay -->
   <div id="hashtag-overlay">
     <div id="hashtag-header">
@@ -362,7 +386,7 @@
     </div>
     <div id="hashtag-grid"></div>
   </div>
- 
+
   <!-- Archive overlay — shown for inactive videos accessed via link -->
   <div id="archive-overlay">
     <div id="archive-bar">
@@ -375,14 +399,14 @@
       <div id="archive-caption"></div>
     </div>
   </div>
- 
+
   <!-- Loading / Error -->
   <div id="loading"><div class="spinner"></div><p>Loading tips…</p></div>
   <div id="error"><p><strong>Couldn't load videos.</strong><br>Make sure <code>videos.json</code> is in the same folder as this page.</p></div>
- 
+
   <!-- Feed (slides injected here) -->
   <div id="feed"></div>
- 
+
 <script>
 // ─────────────────────────────────────────────────────────────
 //  FIELD APP TIPS FEED
@@ -391,7 +415,7 @@
 //  · Share links use ?v=WISTIA_ID — permanent across releases
 //  · Back-to-feed pill appears after any jump from saved/link
 // ─────────────────────────────────────────────────────────────
- 
+
 // ── State ────────────────────────────────────────────────────
 let allVideos    = [];   // every video in videos.json (inc. inactive)
 let activeVideos = [];   // only active:true — what the feed renders
@@ -400,10 +424,10 @@ let currentIndex = 0;
 let totalSlides  = 0;
 let wistiaHandles = {};
 let saved = [];          // array of wistiaIds
- 
+
 let backPillTimer = null;
 let scrollBeforeJump = null;   // index we were on before a jump
- 
+
 // ── userId + storage key ──────────────────────────────────────
 // Pass ?userId={user_id} from Docebo so saves are per-user on shared devices.
 // Docebo iframe example:
@@ -412,7 +436,7 @@ let scrollBeforeJump = null;   // index we were on before a jump
 var _urlParams  = new URLSearchParams(window.location.search);
 var _userId     = _urlParams.get('userId') || '';
 var storageKey  = _userId ? 'fat-saved-' + _userId : 'fat-saved';
- 
+
 // Load saves — and clear any old data that stored indices (numbers) instead of wistiaIds
 try {
   saved = JSON.parse(localStorage.getItem(storageKey) || '[]');
@@ -421,7 +445,7 @@ try {
     localStorage.removeItem(storageKey);
   }
 } catch (_) { saved = []; }
- 
+
 // ── Boot ─────────────────────────────────────────────────────
 fetch('./videos.json')
   .then(r => { if (!r.ok) throw new Error(r.statusText); return r.json(); })
@@ -431,18 +455,18 @@ fetch('./videos.json')
     document.getElementById('loading').style.display = 'none';
     document.getElementById('error').style.display   = 'flex';
   });
- 
+
 // ── Init ─────────────────────────────────────────────────────
 function init(config) {
   allVideos    = config.videos;
   activeVideos = config.videos.filter(function(v) { return v.active !== false; });
   videosConfig = activeVideos;
   totalSlides  = activeVideos.length;
- 
+
   const feed = document.getElementById('feed');
   document.documentElement.style.setProperty('--accent', config.accentColor || '#5b5bd6');
   document.getElementById('channel-name').textContent = '⚡ ' + config.channelName;
- 
+
   // Build progress dots
   const dotsEl = document.getElementById('dots');
   activeVideos.forEach(function(_, i) {
@@ -451,14 +475,14 @@ function init(config) {
     dot.id = 'dot-' + i;
     dotsEl.appendChild(dot);
   });
- 
+
   // Render active slides
   activeVideos.forEach(function(v, i) { feed.appendChild(makeSlide(v, i)); });
- 
+
   updateCounter(0);
   setupObserver();
   document.getElementById('loading').style.display = 'none';
- 
+
   // Restore saved button states
   activeVideos.forEach(function(v, idx) {
     if (saved.indexOf(v.wistiaId) !== -1) {
@@ -467,22 +491,22 @@ function init(config) {
     }
   });
   updateSavedBadge();
- 
+
   // Handle ?v=WISTIA_ID deep link
   handleDeepLink();
 }
- 
+
 // ── Build a slide ─────────────────────────────────────────────
 function makeSlide(video, index) {
   const slide = document.createElement('div');
   slide.className = 'slide';
   slide.dataset.index    = index;
   slide.dataset.wistiaId = video.wistiaId;
- 
+
   const tagsHtml = (video.tags || []).map(function(t) {
     return '<span class="tip-tag" onclick="openHashtag(\'' + t + '\')">' + t + '</span>';
   }).join('');
- 
+
   slide.innerHTML =
     '<div class="wistia-wrap">' +
       '<div class="wistia_embed wistia_async_' + video.wistiaId + ' videoFoam=true" style="height:100%;width:100%">&nbsp;</div>' +
@@ -508,7 +532,7 @@ function makeSlide(video, index) {
         '<div class="action-icon">🔗</div><div class="action-label">Share</div>' +
       '</button>' +
     '</div>';
- 
+
   window._wq = window._wq || [];
   window._wq.push({
     id: video.wistiaId,
@@ -520,10 +544,10 @@ function makeSlide(video, index) {
       });
     }
   });
- 
+
   return slide;
 }
- 
+
 // ── Timeline ──────────────────────────────────────────────────
 function initTimeline(slideEl, wVideo) {
   const fillEl  = slideEl.querySelector('.tl-fill');
@@ -531,7 +555,7 @@ function initTimeline(slideEl, wVideo) {
   const currEl  = slideEl.querySelector('.tl-current');
   const totalEl = slideEl.querySelector('.tl-total');
   const trackEl = slideEl.querySelector('.tl-track');
- 
+
   wVideo.bind('timechange', function(t) {
     const dur = wVideo.duration();
     if (!dur) return;
@@ -541,29 +565,29 @@ function initTimeline(slideEl, wVideo) {
     currEl.textContent  = formatTime(t);
   });
   wVideo.bind('play', function() { totalEl.textContent = formatTime(wVideo.duration()); });
- 
+
   trackEl.addEventListener('click', function(e) { seekTo(wVideo, e.clientX, trackEl); });
   trackEl.addEventListener('touchstart', function(e) { e.preventDefault(); seekTo(wVideo, e.touches[0].clientX, trackEl); }, { passive: false });
   trackEl.addEventListener('touchmove',  function(e) { e.preventDefault(); seekTo(wVideo, e.touches[0].clientX, trackEl); }, { passive: false });
- 
+
   var dragging = false;
   trackEl.addEventListener('mousedown', function(e) { dragging = true; seekTo(wVideo, e.clientX, trackEl); });
   document.addEventListener('mousemove', function(e) { if (dragging) seekTo(wVideo, e.clientX, trackEl); });
   document.addEventListener('mouseup',   function()  { dragging = false; });
 }
- 
+
 function seekTo(wVideo, clientX, trackEl) {
   var rect = trackEl.getBoundingClientRect();
   var pct  = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
   wVideo.time(pct * wVideo.duration());
 }
- 
+
 function formatTime(secs) {
   if (!secs || isNaN(secs)) return '0:00';
   var m = Math.floor(secs / 60), s = Math.floor(secs % 60);
   return m + ':' + (s < 10 ? '0' : '') + s;
 }
- 
+
 // ── Intersection Observer ─────────────────────────────────────
 function setupObserver() {
   var observer = new IntersectionObserver(function(entries) {
@@ -577,7 +601,7 @@ function setupObserver() {
   }, { threshold: 0.65 });
   document.querySelectorAll('.slide').forEach(function(s) { observer.observe(s); });
 }
- 
+
 function updateUI(newIndex) {
   var prevDot = document.getElementById('dot-' + currentIndex);
   var newDot  = document.getElementById('dot-' + newIndex);
@@ -586,11 +610,11 @@ function updateUI(newIndex) {
   currentIndex = newIndex;
   updateCounter(newIndex);
 }
- 
+
 function updateCounter(index) {
   document.getElementById('counter').textContent = (index + 1) + ' / ' + totalSlides;
 }
- 
+
 // ── Deep link: ?v=WISTIA_ID ───────────────────────────────────
 // Links use the wistiaId, never an index position.
 // This means they stay valid forever across releases.
@@ -598,11 +622,11 @@ function handleDeepLink() {
   var params = new URLSearchParams(window.location.search);
   var wId    = params.get('v');
   if (!wId) return;
- 
+
   // Look in ALL videos (including inactive)
   var video = allVideos.find(function(v) { return v.wistiaId === wId; });
   if (!video) return;
- 
+
   if (video.active === false) {
     // Archived — show full-screen overlay, not the main feed
     showArchive(video);
@@ -618,17 +642,17 @@ function handleDeepLink() {
     }, 150);
   }
 }
- 
+
 // ── Share: build ?v=WISTIA_ID URL ────────────────────────────
 function shareClip(index) {
   var video = activeVideos[index];
   var url   = new URL(window.location.href);
   url.searchParams.set('v', video.wistiaId);  // permanent ID, not index
   var shareUrl = url.toString();
- 
+
   var btn = document.querySelector('[data-share="' + index + '"]');
   if (btn) { btn.classList.add('sharing'); setTimeout(function() { btn.classList.remove('sharing'); }, 1000); }
- 
+
   if (navigator.share) {
     navigator.share({ title: video.title, url: shareUrl }).catch(function() {});
     return;
@@ -637,7 +661,7 @@ function shareClip(index) {
     .then(function()  { showToast('🔗 Link copied!'); })
     .catch(function() { showToast('Copy: ' + shareUrl); });
 }
- 
+
 // ── Archive overlay ───────────────────────────────────────────
 // Shown when an inactive video is accessed via share link.
 function showArchive(video) {
@@ -645,20 +669,20 @@ function showArchive(video) {
   wrap.innerHTML =
     '<div class="wistia_embed wistia_async_' + video.wistiaId + ' videoFoam=true" ' +
     'style="position:absolute;inset:0;width:100%;height:100%">&nbsp;</div>';
- 
+
   document.getElementById('archive-title').textContent   = video.title;
   document.getElementById('archive-caption').textContent = video.caption || '';
   document.getElementById('archive-badge').textContent   = '📦 ' + (video.release || 'Archived');
- 
+
   document.getElementById('archive-overlay').classList.add('open');
 }
- 
+
 function closeArchive() {
   document.getElementById('archive-overlay').classList.remove('open');
   // Clear the embed so it stops playing
   document.getElementById('archive-video-wrap').innerHTML = '';
 }
- 
+
 // ── Back-to-feed pill ─────────────────────────────────────────
 // Appears briefly after any jump (from saved drawer or share link).
 // Tapping it returns to the top of the feed.
@@ -668,13 +692,13 @@ function showBackPill() {
   clearTimeout(backPillTimer);
   backPillTimer = setTimeout(function() { pill.classList.remove('show'); }, 4000);
 }
- 
+
 function goBackToFeed() {
   var feedEl = document.getElementById('feed');
   feedEl.scrollTo({ top: 0, behavior: 'smooth' });
   document.getElementById('back-pill').classList.remove('show');
 }
- 
+
 // ── Save ──────────────────────────────────────────────────────
 function toggleSave(index) {
   var video = activeVideos[index];
@@ -683,7 +707,7 @@ function toggleSave(index) {
   var btn = document.querySelector('[data-save="' + index + '"]');
   var pos = saved.indexOf(wId);
   var action;
- 
+
   if (pos === -1) {
     saved.push(wId);
     btn && btn.classList.add('saved');
@@ -695,10 +719,10 @@ function toggleSave(index) {
     action = 'remove';
     showToast('Removed from saved');
   }
- 
+
   try { localStorage.setItem(storageKey, JSON.stringify(saved)); } catch (_) {}
   updateSavedBadge();
- 
+
   window.parent.postMessage({
     type:        'fat-save-update',
     action:      action,
@@ -712,7 +736,7 @@ function toggleSave(index) {
     }),
   }, '*');
 }
- 
+
 function updateSavedBadge() {
   // Button is always visible — highlight it when saves exist
   var btn = document.getElementById('saved-btn');
@@ -727,97 +751,39 @@ function updateSavedBadge() {
     btn.style.color = '';
   }
 }
- 
-// ── Saved drawer ──────────────────────────────────────────────
-function openSavedDrawer() {
-  var list = document.getElementById('saved-list');
-  list.innerHTML = '';
- 
+
+// ── Saved gallery ─────────────────────────────────────────────
+var savedGalleryCloseTimer = null;
+
+function openSavedDrawer() { openSavedGallery(); } // alias so existing callers still work
+
+function openSavedGallery() {
+  // Pause the current feed video while browsing
+  var currentWId = activeVideos[currentIndex] && activeVideos[currentIndex].wistiaId;
+  if (currentWId && wistiaHandles[currentWId]) wistiaHandles[currentWId].pause();
+
+  var grid = document.getElementById('saved-grid');
+  grid.innerHTML = '';
+
+  var count = document.getElementById('saved-count');
+  count.textContent = saved.length + ' saved tip' + (saved.length !== 1 ? 's' : '');
+
   if (saved.length === 0) {
-    list.innerHTML = '<div id="saved-empty">No saved tips yet. Tap 🔖 on any clip.</div>';
+    grid.innerHTML = '<div id="saved-empty-gallery">No saved tips yet.<br>Tap 🔖 on any clip to save it here.</div>';
   } else {
-    saved.forEach(function(wId) {
-      // Look up in allVideos so archived saves still appear
+    saved.forEach(function(wId, i) {
       var video    = allVideos.find(function(v) { return v.wistiaId === wId; });
       if (!video) return;
       var isActive = video.active !== false;
       var idx      = isActive ? activeVideos.findIndex(function(v) { return v.wistiaId === wId; }) : -1;
- 
-      var item = document.createElement('div');
-      item.className = 'saved-item';
-      item.innerHTML =
-        '<div class="saved-item-num' + (isActive ? '' : ' archived') + '">' + (isActive ? idx + 1 : '📦') + '</div>' +
-        '<div class="saved-item-title">' +
-          (video.release ? '<span style="font-size:9px;color:#555;display:block;margin-bottom:2px;">' + video.release + (isActive ? '' : ' · archived') + '</span>' : '') +
-          video.title +
-        '</div>' +
-        '<div class="saved-item-go' + (isActive ? '' : ' archived') + '">' + (isActive ? 'Watch →' : 'View →') + '</div>';
- 
-      item.onclick = function() {
-        closeSavedDrawer();
-        if (isActive) {
-          // Jump to video in the main feed + show back pill
-          scrollBeforeJump = currentIndex;
-          var feedEl = document.getElementById('feed');
-          feedEl.scrollTo({ top: idx * feedEl.clientHeight, behavior: 'smooth' });
-          setTimeout(showBackPill, 400);
-        } else {
-          // Archived — show the overlay
-          showArchive(video);
-        }
-      };
-      list.appendChild(item);
-    });
-  }
- 
-  document.getElementById('saved-drawer').classList.add('open');
-}
- 
-function closeSavedDrawer() {
-  document.getElementById('saved-drawer').classList.remove('open');
-}
- 
-// ── Hashtag browse ────────────────────────────────────────────
-// Opens an Instagram-style grid of all videos tagged with `tag`.
-// Searches allVideos so archived videos also appear in results.
-var hashtagCloseTimer = null;
- 
-function openHashtag(tag) {
-  // Pause the current feed video while browsing
-  var currentWId = activeVideos[currentIndex] && activeVideos[currentIndex].wistiaId;
-  if (currentWId && wistiaHandles[currentWId]) wistiaHandles[currentWId].pause();
- 
-  // Filter ALL videos (active + inactive) by this tag
-  var matches = allVideos.filter(function(v) {
-    return (v.tags || []).some(function(t) {
-      return t.toLowerCase() === tag.toLowerCase();
-    });
-  });
- 
-  // Populate header
-  document.getElementById('hashtag-name').textContent  = tag;
-  document.getElementById('hashtag-count').textContent =
-    matches.length + ' tip' + (matches.length !== 1 ? 's' : '');
- 
-  // Build grid
-  var grid = document.getElementById('hashtag-grid');
-  grid.innerHTML = '';
- 
-  if (matches.length === 0) {
-    grid.innerHTML = '<div id="hashtag-empty">No tips found for #' + tag + '</div>';
-  } else {
-    matches.forEach(function(video, i) {
-      var isActive = video.active !== false;
+
       var card = document.createElement('div');
       card.className = 'hg-card';
- 
-      // Thumbnail: use video.thumbnail URL if provided, else gradient placeholder
-      var thumbStyle = video.thumbnail
-        ? 'background-image:url(' + video.thumbnail + ');'
-        : '';
-      var gradClass = 'hg-grad-' + (i % 6);
-      var initial   = (video.title || '?').charAt(0).toUpperCase();
- 
+
+      var thumbStyle = video.thumbnail ? 'background-image:url(' + video.thumbnail + ');' : '';
+      var gradClass  = 'hg-grad-' + (i % 6);
+      var initial    = (video.title || '?').charAt(0).toUpperCase();
+
       card.innerHTML =
         '<div class="hg-thumb ' + (video.thumbnail ? '' : gradClass) + '" style="' + thumbStyle + '">' +
           (!video.thumbnail ? '<div class="hg-initial">' + initial + '</div>' : '') +
@@ -827,7 +793,94 @@ function openHashtag(tag) {
           '<div class="hg-title">' + video.title + '</div>' +
           (video.release ? '<div class="hg-release">' + video.release + '</div>' : '') +
         '</div>';
- 
+
+      card.onclick = function() {
+        closeSavedGallery();
+        if (isActive) {
+          scrollBeforeJump = currentIndex;
+          setTimeout(function() {
+            document.getElementById('feed').scrollTo({ top: idx * document.getElementById('feed').clientHeight, behavior: 'smooth' });
+            showBackPill();
+          }, 320);
+        } else {
+          setTimeout(function() { showArchive(video); }, 320);
+        }
+      };
+
+      grid.appendChild(card);
+    });
+  }
+
+  var overlay = document.getElementById('saved-overlay');
+  overlay.classList.add('open');
+  requestAnimationFrame(function() {
+    requestAnimationFrame(function() { overlay.classList.add('animate'); });
+  });
+}
+
+function closeSavedGallery() {
+  var overlay = document.getElementById('saved-overlay');
+  overlay.classList.remove('animate');
+  clearTimeout(savedGalleryCloseTimer);
+  savedGalleryCloseTimer = setTimeout(function() {
+    overlay.classList.remove('open');
+    // Resume video that was playing
+    var currentWId = activeVideos[currentIndex] && activeVideos[currentIndex].wistiaId;
+    if (currentWId && wistiaHandles[currentWId]) wistiaHandles[currentWId].play();
+  }, 320);
+}
+
+// ── Hashtag browse ────────────────────────────────────────────
+// Opens an Instagram-style grid of all videos tagged with `tag`.
+// Searches allVideos so archived videos also appear in results.
+var hashtagCloseTimer = null;
+
+function openHashtag(tag) {
+  // Pause the current feed video while browsing
+  var currentWId = activeVideos[currentIndex] && activeVideos[currentIndex].wistiaId;
+  if (currentWId && wistiaHandles[currentWId]) wistiaHandles[currentWId].pause();
+
+  // Filter ALL videos (active + inactive) by this tag
+  var matches = allVideos.filter(function(v) {
+    return (v.tags || []).some(function(t) {
+      return t.toLowerCase() === tag.toLowerCase();
+    });
+  });
+
+  // Populate header
+  document.getElementById('hashtag-name').textContent  = tag;
+  document.getElementById('hashtag-count').textContent =
+    matches.length + ' tip' + (matches.length !== 1 ? 's' : '');
+
+  // Build grid
+  var grid = document.getElementById('hashtag-grid');
+  grid.innerHTML = '';
+
+  if (matches.length === 0) {
+    grid.innerHTML = '<div id="hashtag-empty">No tips found for #' + tag + '</div>';
+  } else {
+    matches.forEach(function(video, i) {
+      var isActive = video.active !== false;
+      var card = document.createElement('div');
+      card.className = 'hg-card';
+
+      // Thumbnail: use video.thumbnail URL if provided, else gradient placeholder
+      var thumbStyle = video.thumbnail
+        ? 'background-image:url(' + video.thumbnail + ');'
+        : '';
+      var gradClass = 'hg-grad-' + (i % 6);
+      var initial   = (video.title || '?').charAt(0).toUpperCase();
+
+      card.innerHTML =
+        '<div class="hg-thumb ' + (video.thumbnail ? '' : gradClass) + '" style="' + thumbStyle + '">' +
+          (!video.thumbnail ? '<div class="hg-initial">' + initial + '</div>' : '') +
+        '</div>' +
+        (!isActive ? '<div class="hg-archived-badge">archived</div>' : '') +
+        '<div class="hg-info">' +
+          '<div class="hg-title">' + video.title + '</div>' +
+          (video.release ? '<div class="hg-release">' + video.release + '</div>' : '') +
+        '</div>';
+
       card.onclick = function() {
         closeHashtag();
         if (isActive) {
@@ -843,11 +896,11 @@ function openHashtag(tag) {
           setTimeout(function() { showArchive(video); }, 320);
         }
       };
- 
+
       grid.appendChild(card);
     });
   }
- 
+
   // Slide up
   var overlay = document.getElementById('hashtag-overlay');
   overlay.classList.add('open');
@@ -855,7 +908,7 @@ function openHashtag(tag) {
     requestAnimationFrame(function() { overlay.classList.add('animate'); });
   });
 }
- 
+
 function closeHashtag() {
   var overlay = document.getElementById('hashtag-overlay');
   overlay.classList.remove('animate');
@@ -867,7 +920,7 @@ function closeHashtag() {
     if (currentWId && wistiaHandles[currentWId]) wistiaHandles[currentWId].play();
   }, 320);
 }
- 
+
 // ── Toast ─────────────────────────────────────────────────────
 var toastTimer;
 function showToast(msg) {
@@ -880,4 +933,3 @@ function showToast(msg) {
 </script>
 </body>
 </html>
- 
